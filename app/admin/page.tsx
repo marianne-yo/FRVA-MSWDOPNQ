@@ -13,7 +13,7 @@ export default function AdminHome() {
           height={20}
           priority
         />
-        
+        <h1>Hello World</h1>
       </main>
     </div>
   );
