@@ -27,38 +27,29 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="p-1 h-full ">
-        <SidebarMenu className="p-1 flex flex-col gap-3 w-full  h-full justify-start">
-          <SidebarMenuItem className="h-12 w-full">
-            <SidebarMenuButton asChild className=" p-5 h-full text-[1rem] font-bold">
-              <Link href="/admin">Dashboard</Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem className="h-12 w-full">
-            <SidebarMenuButton asChild className=" h-full p-5 text-[1rem] font-bold">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/admin/summary">Summary</Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-          <SidebarMenuItem className="h-12 w-full">
-            <SidebarMenuButton asChild className=" h-full p-5 text-[1rem] font-bold">
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/admin/responses">Responses</Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-          <SidebarMenuItem className="h-12 w-full">
-            <SidebarMenuButton asChild className=" h-full p-5 text-[1rem] font-bold">
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/admin/settings">Settings</Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-        
-          <SidebarFooter className="flex flex-col align-bottom justify-self-end  p-1">
-            <SidebarMenuItem className="">
-              <SidebarMenuButton asChild className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold">
-                <Link href="/">Logout</Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarFooter className="flex flex-col align-bottom justify-self-end p-1">
+            <SidebarMenuButton asChild className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold">
+              <Link href="/">Logout</Link>
+            </SidebarMenuButton>
           </SidebarFooter>
         
         </SidebarMenu>
