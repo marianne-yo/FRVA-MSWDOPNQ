@@ -1,5 +1,5 @@
 [
-    {"id": 1, "name": "John Doe", "age": 30},
-    {"id": 2, "name": "Jane Doe", "age": 26},
-    {"id": 3, "name": "Bob Smith", "age": 28}
+    {"id": 1, "name": "John Doe", "age": 30, "barangay": "Samput"},
+    {"id": 2, "name": "Jane Doe", "age": 26, "barangay": "Canan"},
+    {"id": 3, "name": "Bob Smith", "age": 28, "barangay": "Patalan"}
 ]

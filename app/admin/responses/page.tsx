@@ -23,6 +23,7 @@ export default function Response(){
             setResults(filteredData);        
         }
     }
+    
 
 
     return(
@@ -57,6 +58,7 @@ export default function Response(){
                                 <TableCell>Respondent ID</TableCell>
                                 <TableCell>Name</TableCell>
                                 <TableCell>Age</TableCell>
+                                <TableCell>Barangay</TableCell>
                             </TableRow>
                         </TableHeader>
 
@@ -66,6 +68,7 @@ export default function Response(){
                                     <TableCell>{item.id}</TableCell>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell>{item.age}</TableCell>
+                                    <TableCell>{item.barangay}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

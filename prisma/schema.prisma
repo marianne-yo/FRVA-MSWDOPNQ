@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RiskAnswer {
+  WITHIN_YEAR
+  TWO_TO_FIVE_YEARS
+  NONE
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RiskCategory {
+  INDIVIDUAL
+  ECONOMIC
+  ENVIRONMENT
+  SOCIAL
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model SurveyResponse {
+  id         String        @id @default(cuid())
+  barangay   String
+  createdAt  DateTime      @default(now())
+  totalScore Int
+  riskLevel  RiskLevel
+  risks      ResponseRisk[]
+}
+
+model RiskItem {
+  id        Int            @id
+  question  String
+  category  RiskCategory
+  maxScore  Int
+  responses ResponseRisk[]
+}
+
+model ResponseRisk {
+  id           String       @id @default(cuid())
+  response     SurveyResponse @relation(fields: [responseId], references: [id])
+  responseId   String
+  riskItem     RiskItem     @relation(fields: [riskItemId], references: [id])
+  riskItemId   Int
+  answer       RiskAnswer
+  score        Int
+}
+

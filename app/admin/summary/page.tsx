@@ -5,6 +5,23 @@ import { Separator } from "@/components/ui/separator"
 import data from "../../lib/data.json" //mock data
 
 export default function Summary(){
+    const totalResponses = data.length
+
+    const barangayCount = {}
+
+    data.forEach(item => {
+    barangayCount[item.barangay] = 
+        (barangayCount[item.barangay] || 0) + 1
+    })
+
+    const barangayPercentages = Object.entries(barangayCount).map(
+    ([barangay, count]) => ({
+        barangay,
+        count,
+        percentage: ((count / totalResponses) * 100).toFixed(1)
+    })
+    )
+
     return(
         <main className="flex flex-col">
             <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
