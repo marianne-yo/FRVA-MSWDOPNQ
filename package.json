@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
     "@tanstack/react-form": "^1.28.3",
     "@tanstack/react-form-nextjs": "^1.28.3",
     "@tanstack/zod-form-adapter": "^0.42.1",
