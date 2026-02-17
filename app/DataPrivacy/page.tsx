@@ -1,13 +1,12 @@
 "use client"
 
 import React from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 import { useState } from 'react'
 import LogoHeader from './../../components/LogoHeader'
 
-function page() {
+function DataPrivacyPage() {
 
 const [isChecked, setChecked] = useState(false);
 
@@ -62,4 +61,4 @@ className={`rounded-[5px]  flex w-full h-full items-center justify-center
   )
 }
 
-export default page
+export default DataPrivacyPage
