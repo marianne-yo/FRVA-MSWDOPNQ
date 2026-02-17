@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
@@ -26,9 +26,53 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { supabase } from '@/lib/supabase/client'
+
+interface Question {
+  q_id: number;
+  indicator_number: number;
+  category: string;
+  question_text: string;
+  question_text_tagalog: string;
+}
+
+const surveySchema = z.object({
+  fullName: z.string().min(2, "Full name is required"),
+  positionFamily: z.string().min(1, "Please select a position"),
+  barangay: z.string().min(1, "Please select a barangay"),
+  sitioPurok: z.string().min(1, "Sitio/Purok is required"),
+  numChildren: z.number().min(0),
+  numFamHH: z.number().min(1, "At least 1 household member is required"),
+  responses: z.array(
+    z.object({
+      q_id: z.number(),
+      choice: z.string().min(1, "This question is required"),
+    })
+  ).length(74),
+});
 
 export default function Page() {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+  const fetchQuestions = async () => {
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .order('indicator_number', { ascending: true });
+
+    if (error) {
+      console.error("Supabase Error:", error.message); // Check for permission errors
+    } else {
+      console.log("Fetched Questions:", data); // If this is [], your table is empty or name is wrong
+      setQuestions(data);
+    }
+    setLoading(false);
+  };
+  fetchQuestions();
+}, []);
 
   const categories = [
     { id: 2, label: "Individual Life Cycle Risks", range: [1, 30] },
@@ -48,16 +92,64 @@ export default function Page() {
       beneficiaryYear: '',
       barangay: '',
       sitioPurok: '',
-      // We will initialize 74 responses here
+      q74OtherDescription: '',
       responses: Array.from({ length: 74 }, (_, i) => ({
         q_id: i + 1,
         choice: ''
       }))
     },
-    validatorAdapter: zodValidator(),
+    // Use the adapter here to fix the red underline on onChange
+    validatorAdapter: zodValidator(), 
+    validators: {
+      onChange: surveySchema,
+    },
+
     onSubmit: async ({ value }) => {
-      console.log('Final Data:', value)
-      // Here is where you will send data to Supabase
+      try {
+        // Step A: Insert family data + the Q74 text into 'respondents'
+        const { data: resData, error: resError } = await supabase
+          .from('respondents')
+          .insert([{
+            full_name: value.fullName,
+            barangay: value.barangay,
+            sitio_purok: value.sitioPurok,
+            position_family: value.positionFamily === 'Other' ? value.positionFamilyOther : value.positionFamily,
+            num_children: value.numChildren,
+            num_fam_hh: value.numFamHH,
+            is_4ps: value.is4ps === 'yes',
+            beneficiary_year: value.beneficiaryYear,
+            // THIS IS THE NEW PART
+            q74_response: value.q74OtherDescription 
+          }])
+          .select()
+          .single();
+
+        if (resError) throw resError;
+
+        //Prepare the 74 answers with the new respondent_id
+        const batchResponses = value.responses
+          .filter(r => r.q_id !== 74) 
+          .map(r => ({
+            respondent_id: resData.id,
+            question_id: r.q_id,
+            choice: r.choice
+          }));
+
+        // Bulk insert all answers into 'responses' table
+        const { error: batchError } = await supabase
+          .from('responses')
+          .insert(batchResponses);
+
+        if (batchError) throw batchError;
+
+        alert("Success! The FRVA form has been submitted.");
+        window.location.reload();
+        
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+        console.error("Submission error:", errorMessage);
+        alert(`Error saving data: ${errorMessage}`);
+      }
     },
   })
 
@@ -70,13 +162,20 @@ export default function Page() {
       </div>
     
     <div className="bg-white border border-[#3405F9] p-8 w-full max-w-4xl mx-auto rounded-md shadow-sm">
-        <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        <form onSubmit={(e) => {
+          e.preventDefault(); 
+          e.stopPropagation();
+          form.handleSubmit(); 
+        }}>
         {/* STEP 1: FAMILY INFORMATION */}
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="text-xl font-bold mb-3 border-b pb-2">I: Family Information</h2>
-              
-              <form.Field name="fullName">
+              {/* FULL NAME FIELD */}
+              <form.Field 
+                name="fullName"
+                validators={{ onChange: z.string().min(2, "Required")}}
+              >
                 {(field) => (
                   <div>
                     <label className="font-bold text-1xl mb-0">Full Name:</label>
@@ -87,10 +186,15 @@ export default function Page() {
                       onChange={(e) => field.handleChange(e.target.value)} 
                       placeholder='e.g. Juan Dela Cruz'
                     />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {field.state.meta.errors.map(err => typeof err === 'object' ? err.message : err). join(',')}</p>
+                    )}
                   </div>
                 )}
               </form.Field>
-              
+
+              {/* POSITION IN THE FAMILY */}
               <form.Field name="positionFamily">
                 {(field) => (
                   <div className="space-y-2">
@@ -136,6 +240,7 @@ export default function Page() {
                 )}
               </form.Field>
               
+              {/* NUMBER OF CHILDREN AND FAMILY MEMBERS */}
               <div className='grid grid-cols-2'>
               <form.Field name="numChildren">
                   {(field) => (
@@ -182,7 +287,7 @@ export default function Page() {
                 </form.Field>
               </div>
 
-
+                {/* 4PS Beneficiary */}
               <div className="grid grid-cols-2 gap-4">
                  <form.Field name="is4ps">
                   {(field) => (
@@ -218,6 +323,7 @@ export default function Page() {
                 </form.Field>
               </div>
 
+                {/* BARANGAY AND SITIO/PUROK */}
               <div className="grid grid-cols-2 gap-4">
                  <form.Field name="barangay">
                   {(field) => (
@@ -272,7 +378,7 @@ export default function Page() {
                   )}
                 </form.Field>
 
-                {/* Sitio/Purok - Simplified */}
+                {/* Sitio/Purok */}
                 <form.Field name="sitioPurok">
                   {(field) => (
                     <div>
@@ -287,43 +393,130 @@ export default function Page() {
                 </form.Field>
               </div>
 
-              <Button type="button" className="w-full mt-6" onClick={() => setStep(2)}>
+              <Button 
+                type="button" 
+                className="w-full mt-6" 
+                onClick={async () => {
+                  await form.validateField('fullName', 'change');
+                  await form.validateField('positionFamily', 'change');
+                  await form.validateField('barangay', 'change');
+                  await form.validateField('sitioPurok', 'change');
+                  await form.validateField('numChildren', 'change');
+                  await form.validateField('numFamHH', 'change');
+
+                  const state = form.state.fieldMeta;
+                  const hasErrors = state.fullName.errors.length > 0 ||
+                    state.positionFamily.errors.length > 0 ||
+                    state.barangay.errors.length > 0 ||
+                    state.sitioPurok.errors.length > 0 ||
+                    state.numChildren.errors.length > 0 ||
+                    state.numFamHH.errors.length > 0; 
+
+                  if (!hasErrors) {
+                    setStep(2);
+                    window.scrollTo(0, 0);
+                  } else {
+                    alert("Please fill out all required fields before proceeding to the survey.");
+                  }
+                }}>
                 Next
               </Button>
             </div>
           )}
 
-          {/* STEP 2: THE 74 QUESTIONS */}
-          {step === 2 && (
-            <div className="space-y-8">
-              <h2 className="text-xl font-bold mb-3 border-b pb-2">II: Risk Assessment</h2>
-              <p className="text-sm italic text-gray-600">Please answer for each indicator based on your family&apos;s experience.</p>
-
-              {/* In a real scenario, you would .map() through your DB questions here */}
-              <div className="p-4 border rounded-lg bg-gray-50">
-                <p className="font-bold">1. Miscarriage (Pagkakunan)</p>
-                <RadioGroup className="flex gap-4 mt-2">
-                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="WITHIN_YEAR" id="q1-1" />
-                    <label htmlFor="q1-1">Within the Year</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="2_5_YEARS" id="q1-2" />
-                    <label htmlFor="q1-2">2-5 Years Ago</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="NONE" id="q1-3" />
-                    <label htmlFor="q1-3">None</label>
-                  </div>
-                </RadioGroup>
+          {/* DYNAMIC CATEGORIES */}
+          {categories.map((cat) => step === cat.id && (
+            <div key={cat.id} className="space-y-6 animate-in fade-in duration-500">
+              <div className="border-b pb-2 mb-4">
+                <h2 className="text-xl font-bold text-[#3405F9]">Part {cat.id - 1}: {cat.label}</h2>
+                <p className="text-sm italic text-gray-600">Pumili ng isa sa bawat katanungan.</p>
               </div>
 
-              <div className="flex gap-4">
-                <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-                <Button type="submit" className="bg-green-600 hover:bg-green-700">Submit Assessment</Button>
+              {loading ? (
+                <div className="flex flex-col items-center justify-center p-10">
+                  <Spinner />
+                  <p className="text-sm text-gray-500 mt-2">Loading questions...</p>
+                </div>
+              ) : (
+                // Filter questions by indicator range
+                questions
+                  .filter(q => q.indicator_number >= cat.range[0] && q.indicator_number <= cat.range[1])
+                  .map((q) => (
+                    <div key={q.q_id} className="p-4 border rounded-lg bg-gray-50 space-y-3">
+                      <div>
+                        <p className="font-bold text-black">{q.indicator_number}. {q.question_text}</p>
+                        <p className="text-sm italic text-blue-700">{q.question_text_tagalog}</p>
+                      </div>
+
+                      {/* Remove RadioGroup for Q74 as per your request */}
+                      {q.indicator_number !== 74 ? (
+                        <form.Field name={`responses[${q.indicator_number - 1}].choice`}>
+                          {(field) => (
+                            <RadioGroup 
+                              onValueChange={field.handleChange} 
+                              value={field.state.value}
+                              className="flex flex-col md:flex-row gap-4"
+                            >
+                              <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
+                                <RadioGroupItem value="WITHIN_YEAR" id={`q${q.q_id}-1`} />
+                                <label htmlFor={`q${q.q_id}-1`} className="text-sm cursor-pointer">Within the Year</label>
+                              </div>
+                              <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
+                                <RadioGroupItem value="2_5_YEARS" id={`q${q.q_id}-2`} />
+                                <label htmlFor={`q${q.q_id}-2`} className="text-sm cursor-pointer">2-5 Years Ago</label>
+                              </div>
+                              <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
+                                <RadioGroupItem value="NONE" id={`q${q.q_id}-3`} />
+                                <label htmlFor={`q${q.q_id}-3`} className="text-sm cursor-pointer">None</label>
+                              </div>
+                            </RadioGroup>
+                          )}
+                        </form.Field>
+                      ) : (
+                        /* Question 74 Text Area only */
+                        <form.Field name="q74OtherDescription">
+                          {(field) => (
+                            <div className="mt-2">
+                              <label className="text-sm font-semibold text-gray-700 italic">
+                                Pakisulat ang iba pang panganib (Please specify):
+                              </label>
+                              <Input 
+                                placeholder="Type additional details here..."
+                                value={field.state.value || ''}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                className="mt-2 border-[#3405F9] bg-white"
+                              />
+                            </div>
+                          )}
+                        </form.Field>
+                      )}
+                    </div>
+                  ))
+              )}
+
+              <div className="flex gap-4 pt-6 border-t">
+                <Button variant="outline" type="button" onClick={() => {
+                  setStep(step - 1);
+                  window.scrollTo(0, 0);
+                }}>
+                  Back
+                </Button>
+                
+                {step < 5 ? (
+                  <Button type="button" className="bg-[#3405F9]" onClick={() => {
+                    setStep(step + 1);
+                    window.scrollTo(0, 0);
+                  }}>
+                    Next Section
+                  </Button>
+                ) : (
+                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                    Submit Final Assessment
+                  </Button>
+                )}
               </div>
             </div>
-          )}
+          ))}
         </form>
       </div>
     </main>
