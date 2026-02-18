@@ -1,11 +1,16 @@
-
+"use client"
 import { ChartContainer } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
 
 import data from "../../lib/data.json" //mock data
+import { supabase } from '@/lib/supabase/client'
+
 import { Card, CardDescription, CardHeader, CardTitle, CardAction, CardContent, CardFooter } from "@/components/ui/card"
+import { useState } from "react"
 
 export default function Summary(){
+    const [responses, setResponses] = useState<Response[]>([]);
+
     return(
         <main className="flex flex-col lg:px-20 sm:p-0 md:px-8">
             <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
@@ -15,7 +20,9 @@ export default function Summary(){
                 <Card className="lg:w-[20%] sm:w-[30%] md:w-[30%] px-1 bg-slate-50">
                     <CardHeader>
                         <CardDescription>Total Responses</CardDescription>
-                        <CardTitle className="lg:text-4xl font-bold sm:text-3xl md:text-4xl">10,000</CardTitle>
+                        <CardTitle className="lg:text-4xl font-bold sm:text-3xl md:text-4xl">
+                            
+                        </CardTitle>
                         
                         {/* <CardAction>Card Action</CardAction> */}
                     </CardHeader>

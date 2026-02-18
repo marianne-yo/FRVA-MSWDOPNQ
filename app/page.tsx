@@ -1,8 +1,14 @@
+"use client"
 import Image from 'next/image'
 import Link from 'next/link';
 import LogoHeader from './../components/LogoHeader';
+import { useState } from 'react';
+
+import Popups from '@/components/Popups';
 
 export default function Home() {
+  const [open,isOpen] = useState(false);
+
   return (
     <main className=''>
     <div className="h-screen relative bg-cover bg-center bg-no-repeat flex items-center justify-center" 
@@ -18,14 +24,21 @@ export default function Home() {
       <p className='text-[0.5rem] md:text-[0.7rem] lg:text-[0.8rem] text-white'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dicta placeat nemo vero provident assumenda saepe non labore autem! Sunt libero laudantium animi fugiat quasi nulla beatae delectus consequatur, quaerat adipisci.</p>
     </div>
 
+    <Popups
+    isOpen={open}
+    onclose={()=>isOpen(false)}
+    ></Popups>
 
     <div className='flex flex-col  p-5 gap-4 lg:w-[55%] w-full '>
       <Link href={'/DataPrivacy'}><button className='lg:p-4 md:p-3 p-2 w-full rounded-[5px] bg-[#FF4549] cursor-pointer hover:bg-[#e2191c] text-[0.6rem] md:text-[0.8rem] lg:text-[1rem] text-white'>TAKE SURVEY</button></Link>
-      <button className='lg:p-4 md:p-3 p-2 w-full rounded-[5px] cursor-pointer bg-[#FFAE35] hover:bg-[#e08d11] text-[0.6rem] md:text-[0.8rem] lg:text-[1rem] text-black'>LOGIN AS ADMIN</button>
+
+      <button className='lg:p-4 md:p-3 p-2 w-full rounded-[5px] cursor-pointer bg-[#FFAE35] hover:bg-[#e08d11] text-[0.6rem] md:text-[0.8rem] lg:text-[1rem] text-black' onClick={() => (isOpen (true))}>LOGIN AS ADMIN</button>
     </div>
     <div className='text-center flex flex-col gap-2'>
       <p className='text-[0.5rem] md:text-[0.7rem] lg:text-[0.8rem] text-white'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dicta placeat nemo vero provident assumenda saepe non labore autem! Sunt libero laudantium animi fugiat quasi nulla beatae delectus consequatur, quaerat adipisci.</p>
     </div>
+
+    
 
     <a
       className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
