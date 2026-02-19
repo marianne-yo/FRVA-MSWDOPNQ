@@ -9,7 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.96.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.97.0",
     "@tanstack/react-form": "^1.28.3",
     "@tanstack/react-form-nextjs": "^1.28.3",
     "chart.js": "^4.5.1",

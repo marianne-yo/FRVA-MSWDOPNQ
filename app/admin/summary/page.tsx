@@ -1,14 +1,36 @@
 "use client"
+
+import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 import { ChartContainer } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
 
 import data from "../../lib/data.json" //mock data
-import { supabase } from '@/lib/supabase/client'
 
 import { Card, CardDescription, CardHeader, CardTitle, CardAction, CardContent, CardFooter } from "@/components/ui/card"
 import { useState } from "react"
 
 export default function Summary(){
+
+const router = useRouter();
+useEffect(()=>{
+    console.log("hllo btch")
+
+  const checkUser = async()=>{
+    const {data} = await supabase.auth.getUser()
+console.log(data)
+    if(!data.user){
+        console.log("hllo btch")
+      router.push("/")
+    }
+
+  }
+checkUser();
+},[])
+
+
     const [responses, setResponses] = useState<Response[]>([]);
 
     return(
