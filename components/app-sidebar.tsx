@@ -42,6 +42,12 @@ export function AppSidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
+              <Link href="/admin/perBarangayResponses">Per Barangay Responses</Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/admin/settings">Settings</Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

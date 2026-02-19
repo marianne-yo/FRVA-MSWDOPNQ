@@ -1,11 +1,9 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { useForm } from '@tanstack/react-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
 import LogoHeader from "./../../../components/LogoHeader"
 import { Input } from '@/components/ui/input'
-import { Form } from 'radix-ui'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,13 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { supabase } from '@/lib/supabase/client'
 
@@ -36,7 +27,7 @@ export interface Question {
   question_text_tagalog: string;
 }
 
-const surveySchema = z.object({
+const personalInfoSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   positionFamily: z.string().min(1, "Please select a position"),
   positionFamilyOther: z.string().optional(),
@@ -45,19 +36,8 @@ const surveySchema = z.object({
   numChildren: z.number().min(0),
   numFamHH: z.number().min(1, "At least 1 household member is required"),
   is4ps: z.string(),
-
   beneficiaryYear: z.string().optional(),
-
-  q74OtherDescription: z.string().optional(),
-
-  responses: z.array(
-    z.object({
-      q_id: z.number(),
-      choice: z.string().min(1, "This question is required"),
-    })
-  ).length(74),
-})
-.superRefine((data, ctx) => {
+}).superRefine((data, ctx) => {
   if (data.is4ps === "yes") {
     if (!data.beneficiaryYear) {
       ctx.addIssue({
@@ -65,23 +45,32 @@ const surveySchema = z.object({
         code: z.ZodIssueCode.custom,
         message: "Please select the starting date",
       });
-      return;
     }
 
-    const selectedDate = new Date(data.beneficiaryYear);
-    const today = new Date();
-
-    if (selectedDate > today) {
-      ctx.addIssue({
-        path: ["beneficiaryYear"],
-        code: z.ZodIssueCode.custom,
-        message: "Date cannot be in the future",
-      });
+    if (data.beneficiaryYear) {
+      const selectedDate = new Date(data.beneficiaryYear);
+      if (selectedDate > new Date()) {
+        ctx.addIssue({
+          path: ["beneficiaryYear"],
+          code: z.ZodIssueCode.custom,
+          message: "Date cannot be in the future",
+        });
+      }
     }
   }
 });
 
-
+const surveyQuestionsSchema = z.object({
+  responses: z.array(
+    z.object({
+      q_id: z.number(),
+      choice: z.string().min(1, "Please answer by choosing one. (Pakisagutan po)"),
+    })
+  ).length(74).refine(
+    (responses) => responses.slice(0, 73).every(r => r.choice.length > 0),
+    { message: "Please answer all survey questions (1–73)." }
+  ),
+});
 
 export default function Page() {
   const [step, setStep] = useState(1);
@@ -96,7 +85,8 @@ export default function Page() {
       .order('indicator_number', { ascending: true });
 
     if (error) {
-      console.error("Supabase Error:", error.message); // Check for permission errors
+      // console.error("Supabase Error:", error.message);
+      console.error(error.message) // Check for permission errors
     } else {
       console.log("Fetched Questions:", data); // If this is [], your table is empty or name is wrong
       setQuestions(data);
@@ -130,16 +120,10 @@ export default function Page() {
         choice: ''
       }))
     },
-    
-    validators: {
-      onChange: ({ value }) => {
-        return surveySchema.safeParse(value);
-      },
-    },
 
     onSubmit: async ({ value }) => {
       try {
-        // 1. Insert into 'respondents' using YOUR schema names
+        // 1. Insert into 'respondents' using  schema names
         const { data: resData, error: resError } = await supabase
           .from('respondents')
           .insert([{
@@ -184,7 +168,7 @@ export default function Page() {
   })
 
   return (
-    <main className="bg-[#FFFDF0] min-h-screen p-2 text-black">
+    <main className="bg-[#fffef7] min-h-screen p-2 text-black">
       <div className="flex flex-col items-center mb-2">
         <LogoHeader />
         <h2 className="text-center font-bold">Municipal Social Welfare and Development Office Paniqui</h2>
@@ -204,7 +188,7 @@ export default function Page() {
               {/* FULL NAME FIELD */}
               <form.Field 
                 name="fullName"
-                validators={{ onChange: z.string().min(2, "Required")}}
+                validators={{ onChange: z.string().min(2, "Required, please fill out the name field.")}}
               >
                 {(field) => (
                   <div>
@@ -215,11 +199,13 @@ export default function Page() {
                       value={field.state.value} 
                       onChange={(e) => field.handleChange(e.target.value)} 
                       placeholder='e.g. Juan Dela Cruz'
+                      className={`border ${field.state.meta.errors.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-red-500 text-sm mt-1">
                         {field.state.meta.errors.map(err => typeof err === 'object' ? err.message : err). join(',')}</p>
                     )}
+
                   </div>
                 )}
               </form.Field>
@@ -243,7 +229,7 @@ export default function Page() {
                       <SelectTrigger className={`w-full text-black ${
                         field.state.meta.errors.length > 0
                           ? "border-red-500 focus:ring-red-500"
-                          : "border-[#3405F9]"
+                          : "border-gray-300"
                       }`}>
                         <SelectValue placeholder="Select position..." />
                       </SelectTrigger>
@@ -257,7 +243,7 @@ export default function Page() {
                       </SelectContent>
                     </Select>
 
-                    {/* 🔴 Error Message */}
+                    {/* Error Message */}
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-red-500 text-sm">
                         {field.state.meta.errors
@@ -270,18 +256,32 @@ export default function Page() {
                     {/* Conditional Input for "Other" */}
                     <form.Subscribe selector={(state) => state.values.positionFamily}>
                       {(position) => position === 'Other' && (
-                        <form.Field name="positionFamilyOther">
+                        <form.Field name="positionFamilyOther"
+                          validators={{
+                            onChange: ({ value, fieldApi }) => {
+                              const position = fieldApi.form.getFieldValue('positionFamily');
+                              if (position !== 'Other') return undefined;
+                              if (!value || value.trim().length === 0) return "Please specify your position in the family";
+                              return undefined;
+                            }
+                          }}
+                        >
                           {(otherField) => (
                             <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-300">
                               <label className="text-sm font-semibold text-gray-700 italic">
                                 Please specify / Pakisulat kung ano:
                               </label>
                               <Input 
-                                className="mt-1 border-[#3405F9]"
+                                className={`mt-1 ${otherField.state.meta.errors.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
                                 placeholder="e.g. Uncle, Foster Parent, etc."
                                 value={otherField.state.value}
                                 onChange={(e) => otherField.handleChange(e.target.value)}
                               />
+                              {otherField.state.meta.errors.length > 0 && (
+                                <p className="text-red-500 text-sm mt-1">
+                                  {otherField.state.meta.errors.map(err => typeof err === 'object' && err !== null ? (err as {message: string}).message : err).join(", ")}
+                                </p>
+                              )}
                             </div>
                           )}
                         </form.Field>
@@ -309,10 +309,10 @@ export default function Page() {
                           field.state.meta.isTouched &&
                           field.state.meta.errors.length > 0
                             ? "border-red-500 focus:ring-red-500"
-                            : "border-[#3405F9]"
+                            : "border-gray-300"
                         }`}
                       >
-                        <SelectValue placeholder="----" />
+                        <SelectValue placeholder="----">{field.state.value.toString()}</SelectValue>
                       </SelectTrigger>
 
                       <SelectContent>
@@ -338,6 +338,7 @@ export default function Page() {
 
                 <form.Field
                   name="numFamHH"
+                  validators={{ onChange: z.number().min(1, "At least 1 household member is required") }}
                 >
                   {(field) => (
                     <div>
@@ -355,10 +356,9 @@ export default function Page() {
                       >
                       <SelectTrigger
                         className={`w-full max-w-48 ${
-                          field.state.meta.isTouched &&
                           field.state.meta.errors.length > 0
                             ? "border-red-500 focus:ring-red-500"
-                            : "border-[#3405F9]"
+                            : "border-gray-300"
                         }`}
                       >
                           <SelectValue placeholder="----" />
@@ -414,7 +414,17 @@ export default function Page() {
                   )}
                 </form.Field>
 
-                <form.Field name="beneficiaryYear">
+                <form.Field name="beneficiaryYear"
+                  validators={{
+                    onChange: ({ value, fieldApi }) => {
+                      const is4ps = fieldApi.form.getFieldValue('is4ps');
+                      if (is4ps !== 'yes') return undefined;
+                      if (!value) return "Please select the date";
+                      if (new Date(value) > new Date()) return "Date cannot be in the future";
+                      return undefined;
+                    }
+                  }}
+                >
                   {(field) => (
                     <form.Subscribe selector={(state) => state.values.is4ps}>
                       {(is4ps) => (
@@ -433,13 +443,13 @@ export default function Page() {
                             className={`${
                               field.state.meta.errors.length > 0
                                 ? "border-red-500 focus:ring-red-500"
-                                : "border-[#3405F9]"
+                                : "border-gray-300"
                             }`}
                           />
 
                           {field.state.meta.errors.length > 0 && (
                             <p className="text-red-500 text-sm mt-1">
-                              {field.state.meta.errors.join(", ")}
+                              {field.state.meta.errors.map(err => typeof err === 'object' && err !== null ? (err as {message: string}).message : err).join(", ")}
                             </p>
                           )}
                         </div>
@@ -451,7 +461,9 @@ export default function Page() {
 
                 {/* BARANGAY AND SITIO/PUROK */}
               <div className="grid grid-cols-2 gap-4">
-                 <form.Field name="barangay">
+                 <form.Field name="barangay"
+                  validators={{ onChange: z.string().min(1, "Please select a barangay") }}
+                >
                   {(field) => (
                     <div>
                       <label className="font-bold">Barangay</label>
@@ -460,10 +472,10 @@ export default function Page() {
                         onValueChange={field.handleChange} 
                         defaultValue={field.state.value}
                       >
-                        <SelectTrigger className={`w-full max-w-48 ${field.state.meta.isTouched && field.state.meta.errors.length > 0
+                        <SelectTrigger className={`w-full max-w-48 ${field.state.meta.errors.length > 0
                           ? "border-red-500 focus:ring-red-500"
-                          :"border-[#3405f9]"
-                        }"`}>
+                          :"border-gray-200"
+                        }`}>
                           <SelectValue placeholder="Select a barangay" />
                         </SelectTrigger>
 
@@ -509,10 +521,9 @@ export default function Page() {
                         </SelectContent>
                       </Select>
 
-                      {field.state.meta.isTouched &&
-                        field.state.meta.errors.length > 0 && (
+                      {field.state.meta.errors.length > 0 && (
                           <p className="text-red-500 text-sm mt-1">
-                            {field.state.meta.errors.join(", ")}
+                            {field.state.meta.errors.map(err => typeof err === 'object' && err !== null ? (err as {message: string}).message : err).join(", ")}
                           </p>
                         )}
                     </div>
@@ -520,7 +531,9 @@ export default function Page() {
                 </form.Field>
 
                 {/* Sitio/Purok */}
-                <form.Field name="sitioPurok">
+                <form.Field name="sitioPurok"
+                  validators={{ onChange: z.string().min(1, "Sitio/Purok is required") }}
+                >
                   {(field) => (
                     <div>
                       <label className="font-bold">Sitio/Purok:</label>
@@ -529,17 +542,15 @@ export default function Page() {
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         className={`${
-                          field.state.meta.isTouched &&
                           field.state.meta.errors.length > 0
                             ? "border-red-500 focus:ring-red-500"
-                            : "border-[#3405F9]"
+                            : "border-gray-300"
                         }`}
                       />
 
-                      {field.state.meta.isTouched &&
-                        field.state.meta.errors.length > 0 && (
+                      {field.state.meta.errors.length > 0 && (
                           <p className="text-red-500 text-sm mt-1">
-                            {field.state.meta.errors.join(", ")}
+                            {field.state.meta.errors.map(err => typeof err === 'object' && err !== null ? (err as {message: string}).message : err).join(", ")}
                           </p>
                         )}
                     </div>
@@ -551,10 +562,11 @@ export default function Page() {
                 type="button" 
                 className="w-full mt-6" 
                 onClick={async () => {
-                  await form.handleSubmit();
+                  await form.validateAllFields('change');
 
-                  if (!form.state.isValid) {
-                    alert("Please fill out all required fields before proceeding to the survey.");
+                  const result = personalInfoSchema.safeParse(form.state.values);
+
+                  if (!result.success) {
                     return;
                   }
 
@@ -587,14 +599,20 @@ export default function Page() {
                   .map((q) => (
                     <div key={q.q_id} className="p-4 border rounded-lg bg-gray-50 space-y-3">
                       <div>
-                        <p className="font-bold text-black">{q.indicator_number}. {q.question_text}</p>
+                        <p className="font-bold text-black">
+                          {q.indicator_number}. {q.question_text}
+                          {q.indicator_number !== 74 && <span className="text-red-500 ml-1">*</span>}
+                        </p>
                         <p className="text-sm italic text-blue-700">{q.question_text_tagalog}</p>
                       </div>
 
                       {/* Remove RadioGroup for Q74 as per your request */}
                       {q.indicator_number !== 74 ? (
-                        <form.Field name={`responses[${q.indicator_number - 1}].choice`}>
+                        <form.Field name={`responses[${q.indicator_number - 1}].choice`}
+                          validators={{ onChange: z.string().min(1, "This question is required") }}
+                        >
                           {(field) => (
+                            <div>
                             <RadioGroup 
                               onValueChange={field.handleChange} 
                               value={field.state.value}
@@ -613,15 +631,21 @@ export default function Page() {
                                 <label htmlFor={`q${q.q_id}-3`} className="text-sm cursor-pointer">None</label>
                               </div>
                             </RadioGroup>
+                            {field.state.meta.errors.length > 0 && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {field.state.meta.errors.map(err => typeof err === 'object' ? (err as {message:string}).message : err).join(', ')}
+                              </p>
+                            )}
+                            </div>
                           )}
                         </form.Field>
                       ) : (
-                        /* Question 74 Text Area only */
+                        /* Question 74 — optional text field */
                         <form.Field name="q74OtherDescription">
                           {(field) => (
                             <div className="mt-2">
                               <label className="text-sm font-semibold text-gray-700 italic">
-                                Pakisulat ang iba pang panganib (Please specify):
+                                Pakisulat ang iba pang panganib (Please specify): <span className="text-gray-400 font-normal">(Optional)</span>
                               </label>
                               <Input 
                                 placeholder="Type additional details here..."
@@ -646,14 +670,37 @@ export default function Page() {
                 </Button>
                 
                 {step < 5 ? (
-                  <Button type="button" className="bg-[#3405F9]" onClick={() => {
+                  <Button type="button" className="bg-[#3405F9]" onClick={async () => {
+                    await form.validateAllFields('change');
+
+                    // Check if all questions in the current category range are answered
+                    const currentCat = categories.find(c => c.id === step);
+                    if (currentCat) {
+                      const [rangeStart, rangeEnd] = currentCat.range;
+                      const unanswered = form.state.values.responses
+                        .slice(rangeStart - 1, rangeEnd)
+                        .filter(r => r.q_id !== 74 && !r.choice);
+                      if (unanswered.length > 0) return;
+                    }
+
                     setStep(step + 1);
                     window.scrollTo(0, 0);
                   }}>
                     Next Section
                   </Button>
                 ) : (
-                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                  <Button type="button" className="bg-green-600 hover:bg-green-700"
+                    onClick={async () => {
+                      const result = surveyQuestionsSchema.safeParse(form.state.values);
+
+                      if (!result.success) {
+                        alert("Please answer all survey questions (1–73).");
+                        return;
+                      }
+
+                      await form.handleSubmit();
+                    }}
+                  >
                     Submit Final Assessment
                   </Button>
                 )}
