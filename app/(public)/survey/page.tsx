@@ -64,12 +64,16 @@ const surveyQuestionsSchema = z.object({
   responses: z.array(
     z.object({
       q_id: z.number(),
-      choice: z.string().min(1, "Please answer by choosing one. (Pakisagutan po)"),
+      choice: z.string(), // allow empty — Q74 is optional, per-field validation handles Q1–73
     })
-  ).length(74).refine(
-    (responses) => responses.slice(0, 73).every(r => r.choice.length > 0),
+  )
+  .length(74).refine(
+    (responses) =>
+      responses
+        .filter(r => r.q_id !== 74)
+        .every(r => r.choice && r.choice.length > 0),
     { message: "Please answer all survey questions (1–73)." }
-  ),
+  )
 });
 
 export default function Page() {
@@ -151,9 +155,13 @@ export default function Page() {
           }));
 
         // 3. Bulk insert
-        const { error: batchError } = await supabase
+        const { data: batchData, error: batchError } = await supabase
           .from('responses')
-          .insert(batchResponses);
+          .insert(batchResponses)
+          .select();
+
+        console.log("Batch insert data:", batchData);
+        console.log("Batch insert error:", batchError);
 
         if (batchError) throw batchError;
 
@@ -161,7 +169,11 @@ export default function Page() {
         window.location.reload();
         
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Error";
+        console.error("Submission error:", err);
+        const errorMessage =
+          err instanceof Error ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err ? (err as { message: string }).message
+          : JSON.stringify(err);
         alert(`Submission failed: ${errorMessage}`);
       }
     }
@@ -179,7 +191,6 @@ export default function Page() {
         <form onSubmit={(e) => {
           e.preventDefault(); 
           e.stopPropagation();
-          form.handleSubmit(); 
         }}>
         {/* STEP 1: FAMILY INFORMATION */}
           {step === 1 && (
@@ -619,7 +630,7 @@ export default function Page() {
                               className="flex flex-col md:flex-row gap-4"
                             >
                               <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
-                                <RadioGroupItem value="WITHIN_YEAR" id={`q${q.q_id}-1`} />
+                                <RadioGroupItem value="WITHIN_THE_YEAR" id={`q${q.q_id}-1`} />
                                 <label htmlFor={`q${q.q_id}-1`} className="text-sm cursor-pointer">Within the Year</label>
                               </div>
                               <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
@@ -671,16 +682,17 @@ export default function Page() {
                 
                 {step < 5 ? (
                   <Button type="button" className="bg-[#3405F9]" onClick={async () => {
-                    await form.validateAllFields('change');
-
-                    // Check if all questions in the current category range are answered
+                    // Check values BEFORE validateAllFields (state is fresh here)
                     const currentCat = categories.find(c => c.id === step);
                     if (currentCat) {
                       const [rangeStart, rangeEnd] = currentCat.range;
                       const unanswered = form.state.values.responses
-                        .slice(rangeStart - 1, rangeEnd)
-                        .filter(r => r.q_id !== 74 && !r.choice);
-                      if (unanswered.length > 0) return;
+                        .filter(r => r.q_id >= rangeStart && r.q_id <= rangeEnd && r.q_id !== 74 && !r.choice);
+                      
+                      if (unanswered.length > 0) {
+                        await form.validateAllFields('change'); // trigger red indicators
+                        return;
+                      }
                     }
 
                     setStep(step + 1);
@@ -690,6 +702,7 @@ export default function Page() {
                   </Button>
                 ) : (
                   <Button type="button" className="bg-green-600 hover:bg-green-700"
+                    disabled={form.state.isSubmitting}
                     onClick={async () => {
                       const result = surveyQuestionsSchema.safeParse(form.state.values);
 
@@ -701,7 +714,7 @@ export default function Page() {
                       await form.handleSubmit();
                     }}
                   >
-                    Submit Final Assessment
+                    {form.state.isSubmitting ? "Submitting..." : "Submit Final Assessment"}
                   </Button>
                 )}
               </div>

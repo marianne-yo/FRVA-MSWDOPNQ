@@ -1,8 +1,8 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Table, TableHeader, TableBody, TableHead, TableFooter, TableRow, TableCell, TableCaption } from "@/components/ui/table"
+import { supabase } from "@/lib/supabase/client"
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table"
 import data from "../../lib/data.json"
 
 import { useEffect, useState } from "react"
@@ -12,18 +12,35 @@ export default function Response(){
     const [results, setResults] = useState(data);
 
     const handleSearch = (e) => {
-        const term = e.target.value;
-        setSearchTerm(term);
-        if(term === ''){
-            setResults(data);
-        } else{
-                const filteredData = data.filter((item) =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            setResults(filteredData);        
+    const term = e.target.value
+    setSearchTerm(term)
+
+    // if (term === "") {
+    //     setResults(originalData)
+    // } else {
+    //     const filtered = originalData.filter((item) =>
+    //     item.name.toLowerCase().includes(term.toLowerCase())
+    //     )
+    //     setResults(filtered)
+    // }
+    // }
+
+    useEffect(() => {
+    const fetchResponses = async () => {
+        const { data, error } = await supabase
+        .from("respondents")
+        .select("*")
+        .order("respondent_id", { ascending: false })
+
+        if (!error) {
+        setResults(data)
+        } else {
+        console.error(error)
         }
     }
 
+    fetchResponses()
+    }, [])
 
     return(
         <div>
@@ -69,8 +86,7 @@ export default function Response(){
                                 </TableRow>
                             ))}
                         </TableBody>
-                    </Table>
-                    
+                    </Table> 
                 </div>
             </main>
         </div>
