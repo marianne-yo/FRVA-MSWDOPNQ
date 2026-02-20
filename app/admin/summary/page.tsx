@@ -2,12 +2,10 @@
 
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 import { ChartContainer } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
 
-import { supabase } from '@/lib/supabase/client'
 
 import { Card, CardDescription, CardHeader, CardTitle, CardAction, CardContent, CardFooter } from "@/components/ui/card"
 import { useState, useEffect } from "react"
