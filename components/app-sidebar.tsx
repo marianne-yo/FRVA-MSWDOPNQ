@@ -12,7 +12,25 @@ import {
 } from "@/components/ui/sidebar"
 import Image from "next/image"
 
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase/client"
+
 export function AppSidebar() {
+
+  const route = useRouter();
+
+  async function handleLogOut(){
+
+const {error}= await supabase.auth.signOut()
+
+if(error){
+  alert("Error")
+}else{
+route.push("/");
+}
+
+  }
+
   return (
     <Sidebar className="flex flex-col justify-between p-2">
       <SidebarHeader className="text-lg font-semibold">
@@ -54,7 +72,9 @@ export function AppSidebar() {
 
           <SidebarFooter className="flex flex-col align-bottom justify-self-end p-1">
             <SidebarMenuButton asChild className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold">
-              <Link href="/">Logout</Link>
+              <button
+              onClick={handleLogOut}
+              ><Link href="/">Logout</Link></button>
             </SidebarMenuButton>
           </SidebarFooter>
         
@@ -63,3 +83,4 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
+
