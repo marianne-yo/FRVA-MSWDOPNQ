@@ -1,11 +1,10 @@
 "use client"
 
-import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 import { ChartContainer } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
 
+import { supabase } from '@/lib/supabase/client'
 
 import { Card, CardDescription, CardHeader, CardTitle, CardAction, CardContent, CardFooter } from "@/components/ui/card"
 import { useState, useEffect } from "react"
@@ -32,7 +31,27 @@ export default function Summary(){
 
         fetchStats()
     },[])
+const [loading, setLoading] = useState(true);
 
+useEffect(()=>{
+    const checkUser = async()=>{
+    const {data} = await supabase.auth.getUser()
+console.log(data)
+    if(!data.user){
+        console.log(data)
+    }else{
+        setLoading(false)
+    }
+  }
+checkUser();
+},[])
+  if (loading) {
+    return(
+        <div className="inset-0 z-50 fixed bg-gray-800 flex items-center justify-center">
+                 <Spinner className="size-10 text-white" />
+        </div>
+    )
+  }
     return(
         <main className="flex flex-col lg:px-20 sm:p-0 md:px-8">
             <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
