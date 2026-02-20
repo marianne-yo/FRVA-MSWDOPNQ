@@ -10,6 +10,8 @@
     import { useRouter } from 'next/navigation';
 
     import { toast } from "sonner"
+import { IoEye,IoEyeOff } from "react-icons/io5";
+    
 
 
 import { Spinner } from "@/components/ui/spinner"
@@ -25,6 +27,9 @@ import { set } from 'zod/v4';
         const [email, setEmail] = useState('');
         const [password, setPassword] = useState('');
         const [loading, setLoading] = useState(false);
+
+
+        const [show, setShow] = useState(false)
 
 async function handleSubmit (){
 
@@ -71,11 +76,24 @@ setLoading(true);
                     type='text' 
                     placeholder='Email' />
                      
+                <div className='relative w-full'>
                     <Input
+                    className='pr-10'
                     value={password}
                     onChange={(e)=>setPassword(e.target.value)} 
-                    type='password' 
+                    type={show ? "text":"password"} 
                     placeholder='Password' />
+
+                    {show ?(<IoEyeOff
+                    onClick={()=>setShow(false)}
+                    className='text-black absolute right-1.5 top-2.5 cursor-pointer' />):
+                    (<IoEye 
+                    onClick={()=>setShow(true)}
+                    className='text-black absolute right-1.5 top-2.5 cursor-pointer' />)}
+
+                </div>
+                  
+                    
                 </CardContent>
                 <Button
                 disabled={loading}

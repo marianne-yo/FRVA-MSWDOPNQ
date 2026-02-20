@@ -12,8 +12,10 @@ import data from "../../lib/data.json" //mock data
 import { Card, CardDescription, CardHeader, CardTitle, CardAction, CardContent, CardFooter } from "@/components/ui/card"
 import { useState } from "react"
 
-export default function Summary(){
+import { Spinner } from "@/components/ui/spinner"
 
+export default function Summary(){
+const [loading, setLoading] = useState(true);
 const router = useRouter();
 useEffect(()=>{
     console.log("hllo btch")
@@ -23,15 +25,25 @@ useEffect(()=>{
 console.log(data)
     if(!data.user){
         console.log("hllo btch")
-      router.push("/")
+        console.log(data)
+    }else{
+        setLoading(false)
     }
+
+    
 
   }
 checkUser();
 },[])
 
+  if (loading) {
+    return(
+        <div className="inset-0 z-50 fixed bg-gray-800 flex items-center justify-center">
+                 <Spinner className="size-10 text-white" />
+        </div>
+    )
+  }
 
-    const [responses, setResponses] = useState<Response[]>([]);
 
     return(
         <main className="flex flex-col lg:px-20 sm:p-0 md:px-8">
@@ -117,4 +129,8 @@ checkUser();
             </div>
         </main>
     )
+
+    const [responses, setResponses] = useState<Response[]>([]);
+
+
 }
