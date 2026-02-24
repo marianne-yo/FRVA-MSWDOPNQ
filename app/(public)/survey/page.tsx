@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { supabase } from '@/lib/supabase/client'
 
 import { Card, CardContent } from '@/components/ui/card'
+import { toast } from 'sonner'
 
 export interface Question {
   q_id: number;
@@ -82,6 +83,7 @@ export default function Page() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [submit, setSubmit] = useState(false);
 
   useEffect(() => {
   const fetchQuestions = async () => {
@@ -133,16 +135,19 @@ export default function Page() {
         const { data: resData, error: resError } = await supabase
           .from('respondents')
           .insert([{
-            name: value.fullName, // Match 'name' from your SQL
+            name: value.fullName,
             barangay: value.barangay,
-            position_family: value.positionFamily === 'Other' ? value.positionFamilyOther : value.positionFamily,
+            sitio_purok: value.sitioPurok,
+            position_family: value.positionFamily === 'Other'
+              ? value.positionFamilyOther
+              : value.positionFamily,
             num_children: value.numChildren,
-            num_families_in_hh: value.numFamHH, // Match your SQL name
-            is_4ps_beneficiary: value.is4ps === 'yes', // Match your SQL name
+            num_families_in_hh: value.numFamHH,
+            is_4ps_beneficiary: value.is4ps === 'yes',
             four_ps_since: value.is4ps === 'yes' && value.beneficiaryYear
               ? parseInt(value.beneficiaryYear)
               : null,
-            q74_response: value.q74OtherDescription 
+            q74_response: value.q74OtherDescription
           }])
           .select()
           .single();
@@ -169,7 +174,7 @@ export default function Page() {
 
         if (batchError) throw batchError;
 
-        alert("Success! Data saved to Supabase.");
+        toast("Success! Data saved to Supabase.", {position: 'top-center'});
         window.location.reload();
         
       } catch (err) {
@@ -178,7 +183,7 @@ export default function Page() {
           err instanceof Error ? err.message
           : typeof err === 'object' && err !== null && 'message' in err ? (err as { message: string }).message
           : JSON.stringify(err);
-        alert(`Submission failed: ${errorMessage}`);
+        toast(`Submission failed: ${errorMessage}`, {position: 'top-center'});
       }
     }
   })
@@ -728,11 +733,12 @@ export default function Page() {
                       const result = surveyQuestionsSchema.safeParse(form.state.values);
 
                       if (!result.success) {
-                        alert("Please answer all survey questions (1–73).");
+                        toast("Please answer all survey questions (1–73).", {position: 'top-center'});
                         return;
                       }
 
                       await form.handleSubmit();
+                      toast("Form submitted. Thank you for answering the survey!", {position: "top-center"})
                     }}
                   >
                     {form.state.isSubmitting ? "Submitting..." : "Submit Final Assessment"}
