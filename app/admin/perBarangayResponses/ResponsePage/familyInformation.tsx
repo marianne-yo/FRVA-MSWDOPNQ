@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 type FamilyInformationProps = {
   selectedBarangay: Barangay | null
 }
@@ -61,11 +62,28 @@ const { data, error } = await supabase
     fetchRespondents()
   }, [selectedBarangay])
 
-  if (!selectedBarangay) return <p>Please select a barangay.</p>
+  if (!selectedBarangay) return(
+            <Card className="w-full px-1 bg-slate-50 mb-2">
+          <CardHeader>
+            <CardDescription>No data available. Please select a barangay to view the data.</CardDescription>
+            <CardTitle className="lg:text-5xl font-bold sm:text-3xl md:text-4xl">
+              
+            </CardTitle>
+            {/* <CardAction>Card Action</CardAction> */}
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm font-light text-gray-500">
+              
+            </p>
+          </CardContent>
+          <CardFooter>
+          </CardFooter>
+        </Card>
+  )
 
   return (
     <div className=" p-4">
-      <h2 className="font-bold mb-2">Respondents in {selectedBarangay.label}</h2>
+      <h2 className="font-bold mb-2">Respondents in {selectedBarangay.label}:</h2>
       {loading ? (
     <div className="flex w-full flex-col gap-2">
       {Array.from({ length: 5 }).map((_, index) => (
@@ -79,31 +97,33 @@ const { data, error } = await supabase
       ) : respondents.length === 0 ? (
         <p>No respondents found.</p>
       ) : (
-    <Table className='bg-blue-100'>
+         <Card className="w-full px-5 bg-slate-50 mb-2">
+    <Table className='bg-blue-50'>
       <TableCaption>A list of Respondents in each Barangay</TableCaption>
       <TableHeader>
-        <TableRow className='border-3 border-gray-500'>
+        <TableRow className='border border-gray-500'>
           <TableHead className="w-full p-4">Name <br /><span className='text-[0.7rem]'><i>(Pangalan)</i></span></TableHead>
           <TableHead className="text-center">Position in the Family <br /><span className='text-[0.7rem]'><i>(Posisyon sa Pamilya)</i></span></TableHead>
           <TableHead className="text-center">Number of Children <br /><span className='text-[0.7rem]'><i>(Bilang ng Anak)</i></span></TableHead>
           <TableHead className="text-center">Number of Families in the Household <br /><span className='text-[0.7rem]'><i>(Bilang ng pamilya sa bahay)</i></span></TableHead>
-          <TableHead className="text-center border-3 border-gray-800">4Ps Beneficiary <br /><span className='text-[0.7rem]'><i>(4P's Beneficiary ba?)</i></span></TableHead>
-          <TableHead className="text-center border-3 border-gray-800">If YES, since when?<br /><span className='text-[0.7rem]'><i>(Kung OO Kailan Pa?)</i></span></TableHead>
+          <TableHead className="text-center border-2 border-gray-800">4Ps Beneficiary <br /><span className='text-[0.7rem]'><i>(4P's Beneficiary ba?)</i></span></TableHead>
+          <TableHead className="text-center border-2 border-gray-800">If YES, since when?<br /><span className='text-[0.7rem]'><i>(Kung OO Kailan Pa?)</i></span></TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody className='border-3 border-gray-500'>
+      <TableBody className='border border-gray-500'>
         {respondents.map((r) => (
           <TableRow key={r.respondent_id}>
             <TableCell className="font-medium">{r.name}</TableCell>
             <TableCell className="font-medium text-center">{r.position_family}</TableCell>
             <TableCell className="font-medium text-center">{r.num_children}</TableCell>
             <TableCell className="font-medium text-center">{r.num_families_in_hh}</TableCell>
-            <TableCell className="font-medium text-center border-3 border-gray-800">{r.is_4ps_beneficiary ? "Yes":"No"}</TableCell>
-            <TableCell className="font-medium text-center border-3 border-gray-800">{r.four_ps_since}</TableCell>
+            <TableCell className="font-medium text-center border-2 border-gray-800">{r.is_4ps_beneficiary ? "Yes":"No"}</TableCell>
+            <TableCell className="font-medium text-center border-2 border-gray-800">{r.four_ps_since}</TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
+    </Card>
       )}
 
 

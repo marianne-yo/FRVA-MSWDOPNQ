@@ -19,6 +19,9 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { supabase } from '@/lib/supabase/client'
 
+import { Card, CardContent } from '@/components/ui/card'
+import { toast } from 'sonner'
+
 export interface Question {
   q_id: number;
   indicator_number: number;
@@ -48,12 +51,12 @@ const personalInfoSchema = z.object({
     }
 
     if (data.beneficiaryYear) {
-      const selectedDate = new Date(data.beneficiaryYear);
-      if (selectedDate > new Date()) {
+      const selectedYear = parseInt(data.beneficiaryYear);
+      if (selectedYear > new Date().getFullYear()) {
         ctx.addIssue({
           path: ["beneficiaryYear"],
           code: z.ZodIssueCode.custom,
-          message: "Date cannot be in the future",
+          message: "Year cannot be in the future",
         });
       }
     }
@@ -80,6 +83,7 @@ export default function Page() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [submit, setSubmit] = useState(false);
 
   useEffect(() => {
   const fetchQuestions = async () => {
@@ -131,14 +135,19 @@ export default function Page() {
         const { data: resData, error: resError } = await supabase
           .from('respondents')
           .insert([{
-            name: value.fullName, // Match 'name' from your SQL
+            name: value.fullName,
             barangay: value.barangay,
-            position_family: value.positionFamily === 'Other' ? value.positionFamilyOther : value.positionFamily,
+            sitio_purok: value.sitioPurok,
+            position_family: value.positionFamily === 'Other'
+              ? value.positionFamilyOther
+              : value.positionFamily,
             num_children: value.numChildren,
-            num_families_in_hh: value.numFamHH, // Match your SQL name
-            is_4ps_beneficiary: value.is4ps === 'yes', // Match your SQL name
-            four_ps_since: value.is4ps === 'yes' && value.beneficiaryYear ? value.beneficiaryYear : null, // Match your SQL name
-            q74_response: value.q74OtherDescription 
+            num_families_in_hh: value.numFamHH,
+            is_4ps_beneficiary: value.is4ps === 'yes',
+            four_ps_since: value.is4ps === 'yes' && value.beneficiaryYear
+              ? parseInt(value.beneficiaryYear)
+              : null,
+            q74_response: value.q74OtherDescription
           }])
           .select()
           .single();
@@ -165,7 +174,7 @@ export default function Page() {
 
         if (batchError) throw batchError;
 
-        alert("Success! Data saved to Supabase.");
+        toast("Success! Data saved to Supabase.", {position: 'top-center'});
         window.location.reload();
         
       } catch (err) {
@@ -174,28 +183,29 @@ export default function Page() {
           err instanceof Error ? err.message
           : typeof err === 'object' && err !== null && 'message' in err ? (err as { message: string }).message
           : JSON.stringify(err);
-        alert(`Submission failed: ${errorMessage}`);
+        toast(`Submission failed: ${errorMessage}`, {position: 'top-center'});
       }
     }
   })
 
   return (
-    <main className="bg-[#fffef7] min-h-screen p-2 text-black">
+    <main className="bg-[#fffffb] min-h-screen p-2 text-black">
       <div className="flex flex-col items-center mb-2">
         <LogoHeader />
         <h2 className="text-center font-bold">Municipal Social Welfare and Development Office Paniqui</h2>
         <h1 className="text-[2rem] font-bold text-center ">FAMILY SURVEY ON RISKS AND VULNERABILITY</h1>
       </div>
     
-    <div className="bg-white border border-[#3405F9] p-8 w-full max-w-4xl mx-auto rounded-md shadow-sm">
+    <Card className="bg-white border border-[#c3b4ff] p-8 w-full max-w-4xl mx-auto rounded-md shadow-sm">
         <form onSubmit={(e) => {
           e.preventDefault(); 
           e.stopPropagation();
         }}>
+          <CardContent>
         {/* STEP 1: FAMILY INFORMATION */}
           {step === 1 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold mb-3 border-b pb-2">I: Family Information</h2>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold mb-2 border-b pb-1">I: Family Information</h2>
               {/* FULL NAME FIELD */}
               <form.Field 
                 name="fullName"
@@ -209,7 +219,7 @@ export default function Page() {
                     <Input 
                       value={field.state.value} 
                       onChange={(e) => field.handleChange(e.target.value)} 
-                      placeholder='e.g. Juan Dela Cruz'
+                      placeholder='e.g. Dela Cruz, Juan C.'
                       className={`border ${field.state.meta.errors.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -229,7 +239,7 @@ export default function Page() {
                 }}  
               >
                 {(field) => (
-                  <div className="space-y-2">
+                  <div className="space-y-2 w-full">
                     <label className="font-bold text-black">Position in the family:</label>
                     <br />
                     <label className="font-light text-xs italic">Posisyon sa Pamilya</label>
@@ -303,7 +313,7 @@ export default function Page() {
               </form.Field>
               
               {/* NUMBER OF CHILDREN AND FAMILY MEMBERS */}
-              <div className='grid grid-cols-2'>
+              <div className='grid grid-cols-2 w-full'>
               <form.Field name="numChildren">
                 {(field) => (
                   <div>
@@ -396,7 +406,7 @@ export default function Page() {
                 </form.Field>
                 </div>
                 {/* 4PS Beneficiary */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 w-full">
                  <form.Field name="is4ps">
                   {(field) => (
                     <div>
@@ -430,8 +440,8 @@ export default function Page() {
                     onChange: ({ value, fieldApi }) => {
                       const is4ps = fieldApi.form.getFieldValue('is4ps');
                       if (is4ps !== 'yes') return undefined;
-                      if (!value) return "Please select the date";
-                      if (new Date(value) > new Date()) return "Date cannot be in the future";
+                      if (!value) return "Please select the year";
+                      if (parseInt(value) > new Date().getFullYear()) return "Year cannot be in the future";
                       return undefined;
                     }
                   }}
@@ -446,17 +456,29 @@ export default function Page() {
                             Kung OO kailan pa?
                           </label>
 
-                          <Input
-                            type="date"
+                          <Select
                             disabled={is4ps === "no"}
                             value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            className={`${
+                            onValueChange={(val) => field.handleChange(val)}
+                          >
+                            <SelectTrigger className={`${
                               field.state.meta.errors.length > 0
                                 ? "border-red-500 focus:ring-red-500"
                                 : "border-gray-300"
-                            }`}
-                          />
+                            }`}>
+                              <SelectValue placeholder="Select year..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from(
+                                { length: new Date().getFullYear() - 1990 + 1 },
+                                (_, i) => new Date().getFullYear() - i
+                              ).map(year => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
 
                           {field.state.meta.errors.length > 0 && (
                             <p className="text-red-500 text-sm mt-1">
@@ -471,7 +493,7 @@ export default function Page() {
               </div>
 
                 {/* BARANGAY AND SITIO/PUROK */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 w-full">
                  <form.Field name="barangay"
                   validators={{ onChange: z.string().min(1, "Please select a barangay") }}
                 >
@@ -557,6 +579,7 @@ export default function Page() {
                             ? "border-red-500 focus:ring-red-500"
                             : "border-gray-300"
                         }`}
+                        placeholder='e.g. Purok 1, other names...'
                       />
 
                       {field.state.meta.errors.length > 0 && (
@@ -571,7 +594,7 @@ export default function Page() {
 
               <Button 
                 type="button" 
-                className="w-full mt-6" 
+                className="w-full mt-5 text-md" 
                 onClick={async () => {
                   await form.validateAllFields('change');
 
@@ -584,15 +607,18 @@ export default function Page() {
                   setStep(2);
                   window.scrollTo(0, 0);
                 }}
+                variant={'default'}
               >
                 Next
               </Button>
             </div>
           )}
+          </CardContent>
 
+          <CardContent>
           {/* DYNAMIC CATEGORIES */}
           {categories.map((cat) => step === cat.id && (
-            <div key={cat.id} className="space-y-6 animate-in fade-in duration-500">
+            <div key={cat.id} className="space-y-3 animate-in fade-in duration-500">
               <div className="border-b pb-2 mb-4">
                 <h2 className="text-xl font-bold text-[#3405F9]">Part {cat.id - 1}: {cat.label}</h2>
                 <p className="text-sm italic text-gray-600">Pumili ng isa sa bawat katanungan.</p>
@@ -707,11 +733,12 @@ export default function Page() {
                       const result = surveyQuestionsSchema.safeParse(form.state.values);
 
                       if (!result.success) {
-                        alert("Please answer all survey questions (1–73).");
+                        toast("Please answer all survey questions (1–73).", {position: 'top-center'});
                         return;
                       }
 
                       await form.handleSubmit();
+                      toast("Form submitted. Thank you for answering the survey!", {position: "top-center"})
                     }}
                   >
                     {form.state.isSubmitting ? "Submitting..." : "Submit Final Assessment"}
@@ -720,8 +747,9 @@ export default function Page() {
               </div>
             </div>
           ))}
+          </CardContent>
         </form>
-      </div>
+      </Card>
     </main>
   )
 }

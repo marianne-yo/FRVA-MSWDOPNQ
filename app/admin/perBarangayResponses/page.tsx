@@ -19,6 +19,7 @@ import { TabsLine } from "./Components/menu";
 import { TabsContent } from "@/components/ui/tabs";
 
 import FamilyInformation from "./ResponsePage/familyInformation";
+import PartOne from "./ResponsePage/PartOne";
 
 export default function perBarangay() {
   const [selectedBarangay, setSelectedBarangay] = useState<Barangay | null>(
@@ -84,7 +85,9 @@ export default function perBarangay() {
         <TabsContent value="FamilyInformation">
           <FamilyInformation selectedBarangay={selectedBarangay} />
         </TabsContent>
-        <TabsContent value="Part1">Part 1 content</TabsContent>
+        <TabsContent value="Part1">
+          <PartOne selectedBarangay={selectedBarangay} />
+        </TabsContent>
         <TabsContent value="Part2">Part 2 content</TabsContent>
         <TabsContent value="Part3">Part 3 content</TabsContent>
         <TabsContent value="Part4">Part 4 content</TabsContent>
