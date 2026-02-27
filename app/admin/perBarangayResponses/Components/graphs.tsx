@@ -41,7 +41,7 @@ export function GraphResponse({ choiceCounts, choiceOrder }: Props) {
   })
 
   return (
-    <ChartContainer config={chartConfig} className="w-[80%] m-auto h-[200px] min-h-[100px] border border-red-700">
+    <ChartContainer config={chartConfig} className="w-[80%] m-auto h-[200px] min-h-[100px] border ">
       <BarChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis

@@ -14,8 +14,19 @@ import Image from "next/image"
 
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
+import { usePathname } from "next/navigation"
+import { StarsIcon } from "lucide-react"
+
+// const links = [
+//   { name: 'Summary',
+//     href: '/admin/summary',
+//     icon: StarsIcon
+//   }
+// ]
 
 export function AppSidebar() {
+
+  const pathname = usePathname();
 
   const route = useRouter();
 

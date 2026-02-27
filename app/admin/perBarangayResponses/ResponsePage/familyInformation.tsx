@@ -149,7 +149,7 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
 
   return (
     <div className="p-4">
-      <h2 className="font-bold mb-2">Respondents in {selectedBarangay.label}:</h2>
+      <h2 className="font-bold text-1.8xl mb-2">Respondents in {selectedBarangay.label}:</h2>
 
       {loading ? (
         <div className="flex w-full flex-col gap-2">
@@ -164,9 +164,9 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
       ) : respondents.length === 0 ? (
         <p>No respondents found.</p>
       ) : (
-        <Card className="w-full px-5 bg-slate-50 mb-2">
+        <Card className="w-full px-5 bg-linear-to-b from-gray-50 to-gray-100 mb-2">
         <div className='min-h-[500px]'>
-          <Table className="bg-blue-50">
+          <Table className="bg-blue-50 border rounded-sm shadow-sm">
             <TableCaption>A list of Respondents in each Barangay</TableCaption>
             <TableHeader>
               <TableRow className="border border-gray-500">
@@ -201,7 +201,7 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
               {paginatedRespondents.map((r) => (
                 <TableRow key={r.respondent_id}>
                   <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell className="font-medium text-center">{r.position_family}</TableCell>
+                  <TableCell className="font-medium text-center bg-amber-200">{r.position_family}</TableCell>
                   <TableCell className="font-medium text-center">{r.num_children}</TableCell>
                   <TableCell className="font-medium text-center">{r.num_families_in_hh}</TableCell>
                   <TableCell className={`font-medium text-center border-2 border-gray-800 ${r.is_4ps_beneficiary ? 'text-green-500' : 'text-red-500   '}` }>

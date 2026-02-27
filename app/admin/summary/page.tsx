@@ -1,12 +1,9 @@
 "use client"
-
-
-import { ChartContainer } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
 
 import { supabase } from '@/lib/supabase/client'
 
-import { Card, CardDescription, CardHeader, CardTitle, CardAction, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 
 import { Spinner } from "@/components/ui/spinner"
@@ -53,11 +50,11 @@ checkUser();
     )
   }
     return(
-        <main className="flex flex-col lg:px-20 sm:p-0 md:px-8">
+        <main className="flex flex-col lg:px-50 sm:p-0 md:px-8">
             <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
             <Separator/>
-            <div className="flex flex-wrap justify-around gap-5 px-1 py-5">
-            <h1>HELLOW WORLD</h1>
+            <div className="flex flex-wrap justify-center gap-5 px-1 py-5">
+            
                 <Card className="lg:w-[20%] sm:w-[30%] md:w-[30%] px-1 bg-slate-50">
                     <CardHeader>
                         <CardDescription>Total Respondents</CardDescription>
@@ -121,8 +118,4 @@ checkUser();
             </div>
         </main>
     )
-
-    const [responses, setResponses] = useState<Response[]>([]);
-
-
 }

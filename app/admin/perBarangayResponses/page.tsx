@@ -24,14 +24,14 @@ import PartTwo from "./ResponsePage/PartTwo";
 import PartThree from "./ResponsePage/PartThree";
 import PartFour from "./ResponsePage/PartFour";
 
-export default function perBarangay() {
+export default function PerBarangay() {
   const [selectedBarangay, setSelectedBarangay] = useState<Barangay | null>(
     null,
   );
 
   const [respondentCount, setRespondentCount] = useState(0);
   const [totalRespondents, setTotalRespondents] = useState(0);
-  const [totalResponses, setTotalResponses] = useState(0);
+  // const [totalResponses, setTotalResponses] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -44,7 +44,7 @@ export default function perBarangay() {
         .select("*", { count: "exact", head: true });
 
       setTotalRespondents(respondentCount || 0);
-      setTotalResponses(responsesCount || 0);
+      // setTotalResponses(responsesCount || 0);
     };
 
     fetchStats();
@@ -66,11 +66,11 @@ export default function perBarangay() {
   }, [selectedBarangay]);
 
   return (
-    <main className="">
+    <main className="px-20">
       <h1 className="font-black text-3xl py-5 px-2">PER BARANGAY RESPONSES</h1>
       <Separator />
       <br />
-      <div className="relative">
+      <div className="relative w-full">
         {/*Menu Tabs*/}
         <TabsLine>
           <div className="absolute right-10 top-1.5">
@@ -80,34 +80,38 @@ export default function perBarangay() {
           </div>
           <div className="flex flex-row"></div>
 
-          <Card className="w-full px-1 bg-slate-50 mb-2">
+          <Card className="w-full px-5 bg-linear-to-b from-gray-50 to-gray-100 mb-2">
             <CardHeader>
+              <p className="text-[1rem]">
+                <span className="font-bold text-amber-500 text-xl">
+                  {selectedBarangay ? selectedBarangay.label.toUpperCase() : "None"}
+                </span>
+              </p>
+
               <CardDescription>Total Respondents</CardDescription>
+              
+              {/* <CardAction>Card Action</CardAction> */}
+            </CardHeader>
+            <CardContent>
               <CardTitle className="lg:text-5xl font-bold sm:text-3xl md:text-4xl">
+
                 {respondentCount}
-                <span className="text-gray-500 p-2 text-[2rem]">
+                <span className="text-gray-500 p-2 text-[1.5rem]">
                   ({totalRespondents > 0
                     ? ((respondentCount / totalRespondents) * 100).toFixed(2)
                     : "0.00"}%)
                 </span>
-                <span className=" text-gray-500">out of</span>{" "}
-                {totalRespondents}
+                <span className=" text-gray-500 text-[2rem]">out of </span>
+                
+                <span className="text-gray-500">{totalRespondents}</span>
+
               </CardTitle>
-              {/* <CardAction>Card Action</CardAction> */}
-            </CardHeader>
+            </CardContent>
             <CardContent>
               <p className="text-sm font-light text-gray-500">
                 Total number of responses out of ≈30,000 households
               </p>
             </CardContent>
-            <CardFooter>
-              <p>
-                Barangay:{" "}
-                <span className="font-bold text-blue-500">
-                  {selectedBarangay ? selectedBarangay.label : "None"}
-                </span>
-              </p>
-            </CardFooter>
           </Card>
           <Separator />
 
