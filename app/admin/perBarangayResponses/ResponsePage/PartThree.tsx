@@ -11,8 +11,8 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import GraphResponse from "../Components/graphs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type BarangaySelected = {
   selectedBarangay: Barangay | null;
@@ -65,6 +65,7 @@ function groupByQuestion(responses: Response[]): GroupedQuestion[] {
     }
     const group = map.get(qid)!;
     group.responses.push(r);
+    // This is where the count per choice happens
     group.choiceCounts[r.choice] = (group.choiceCounts[r.choice] ?? 0) + 1;
   }
 
@@ -73,9 +74,9 @@ function groupByQuestion(responses: Response[]): GroupedQuestion[] {
   );
 }
 
-function PartOne({ selectedBarangay }: BarangaySelected) {
-  const [loading, setLoading] = useState(true);
+function PartThree({ selectedBarangay }: BarangaySelected) {
   const [response, setResponse] = useState<Response[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPart1Responses = async () => {
@@ -103,7 +104,7 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
           )
         `,
         )
-        .eq("questions.category", "Individual")
+        .eq("questions.category", "EnvironmentDisaster")
         .eq("respondents.barangay", selectedBarangay.value);
 
       if (error) {
@@ -123,11 +124,11 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
   return (
     <div className="text-black">
       <h2 className="scroll-m-20 border-b pb-2 text-4xl font-semibold tracking-tight first:mt-0 mb-5">
-        Part I. Individual Life Cycle Risks
+        Part III. Environment and Disaster Risks
       </h2>
 
       {loading ? (
-        // Loading Skeleton
+    // Loading Skeleton
         <div className="flex flex-col gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="w-full px-1 bg-slate-50">
@@ -144,11 +145,11 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
           ))}
         </div>
       ) : (
-        // Card
+    // Card
         grouped.map((group) => (
           <Card key={group.q_id} className="w-full px-1 bg-slate-50 mb-2">
             <CardHeader>
-              <CardTitle className="lg:text-2xl md:text-xl text-[0.8rem]">
+              <CardTitle className="lg:text-3xl md:text-2xl text-[1rem]">
                 {group.indicator_number}. {group.question_text}
               </CardTitle>
               <CardDescription>
@@ -174,4 +175,4 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
   );
 }
 
-export default PartOne;
+export default PartThree;

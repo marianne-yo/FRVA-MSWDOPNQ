@@ -41,29 +41,37 @@ export function GraphResponse({ choiceCounts, choiceOrder }: Props) {
   })
 
   return (
-    <ChartContainer config={chartConfig} className="w-[80%] m-auto h-[200px] min-h-[100px]">
+    <ChartContainer config={chartConfig} className="w-[80%] m-auto h-[200px] min-h-[100px] border border-red-700">
       <BarChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="choice"
           tickLine={false}
-          tickMargin={8}
+          tickMargin={10}
           axisLine={false}
         />
-        
-        <ChartTooltip content={<ChartTooltipContent />} />
-                  <LabelList
-            dataKey="percentage"
-            position="top"
-            className="fill-foreground"
-            fontSize={12}
-          /> 
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              formatter={(value, name, item) => (
+                <>
+                  <span className="font-medium">{value} responses</span>
+                  <span className="ml-1 text-muted-foreground">({item.payload.percentage})</span>
+                </>
+              )}
+            />
+          }
+        />
         <Bar dataKey="count" radius={4}>
-
           {chartData.map((_, index) => (
             <Cell key={index} fill={COLORS[index % COLORS.length]} />
           ))}
-          
+          <LabelList
+            dataKey="percentage"
+            position="right"
+            className="fill-foreground font-bold"
+            fontSize={12}
+          />
         </Bar>
       </BarChart>
     </ChartContainer>
