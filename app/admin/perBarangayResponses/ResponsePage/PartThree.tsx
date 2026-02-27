@@ -149,7 +149,7 @@ function PartThree({ selectedBarangay }: BarangaySelected) {
         grouped.map((group) => (
           <Card key={group.q_id} className="w-full px-1 bg-slate-50 mb-2">
             <CardHeader>
-              <CardTitle className="lg:text-3xl md:text-2xl text-[1rem]">
+              <CardTitle className="lg:text-2xl md:text-xl text-[0.8rem]">
                 {group.indicator_number}. {group.question_text}
               </CardTitle>
               <CardDescription>
