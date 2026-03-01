@@ -14,6 +14,7 @@ export default function Response(){
     const handleSearch = (e) => {
     const term = e.target.value
     setSearchTerm(term)
+    }
 
     // if (term === "") {
     //     setResults(originalData)
