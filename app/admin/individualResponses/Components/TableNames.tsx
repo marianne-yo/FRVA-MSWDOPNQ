@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/pagination";
 
 import { FaRegTrashAlt } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
 
 type Respondent = {
   respondent_id: string;
@@ -37,7 +38,7 @@ function TableNames({ search }: { search: string }) {
   const [data, setData] = useState<Respondent[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1)
-const itemsPerPage = 10
+  const itemsPerPage = 10
 
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
 
@@ -91,37 +92,41 @@ useEffect(() => {
       ) : filtered.length === 0 ? (
         <p>No respondents found</p>
       ) : (
-        <Table className="bg-blue-50 border rounded-sm shadow-sm">
+        <Table className="bg-blue-100/10 rounded-lg shadow-sm">
           <TableCaption>A list of Respondents in each Barangay</TableCaption>
           <TableHeader>
-            <TableRow className="border border-gray-500">
-              <TableHead className="w-full p-4">
+            <TableRow className="rounded-t-lg ">
+              <TableHead className="w-full p-6">
                 Name <span className="text-[0.7rem]"><i>(Pangalan)</i></span>
               </TableHead>
-              <TableHead className="text-center">Barangay</TableHead>
-              <TableHead className="text-center">View Response</TableHead>
-              <TableHead className="text-center">Delete Record</TableHead>
-
+              <TableHead className="text-center p-6 ">Barangay</TableHead>
+              <TableHead className="text-center p-6">View Response</TableHead>
+              <TableHead className="text-center p-6">Delete Record</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="border border-gray-500">
+
+          <TableBody className="">
             {paginatedData.map((r) => (
               <TableRow key={r.respondent_id}>
-                <TableCell className="font-medium">{r.name}</TableCell>
-                <TableCell className="font-medium text-center">{r.barangay? r.barangay.charAt(0).toUpperCase() + r.barangay.slice(1): "N/A"}</TableCell>
+                <TableCell className="font-medium text-[0.95rem] px-6">{r.name}</TableCell>
+                <TableCell className="font-medium text-center text-[0.95rem]">{r.barangay? r.barangay.charAt(0).toUpperCase() + r.barangay.slice(1): "N/A"}</TableCell>
                 <TableCell className="font-medium text-center">
-                  <button 
+                  <Button
+                  variant={"outline"}
+                  size={"icon-lg"}
                   onClick={() => setSelectedRespondent(r)}
-                  className="border-2 border-amber-500 px-4 py-2 rounded-[5px] text-[1.2rem]">
+                  className="border-amber-200 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer">
                     <IoListSharp />
-                  </button>
+                  </Button>
                 </TableCell>
                 <TableCell className="font-medium text-center">
-                  <button 
+                  <Button
+                  variant={"destructive"}
+                  size={"icon-lg"}
                   onClick={() => setSelectedRespondent(r)}
-                  className="border-2 border-red-500 px-4 py-2 rounded-[5px] text-[1.2rem]">
+                  className="bg-red-500 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer">
                     <FaRegTrashAlt />
-                  </button>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

@@ -85,7 +85,7 @@ export default function ResultPopUp({ respondent, onClose }: ResultPopUpProps) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="relative bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl shadow-xl p-6">
+      <div className="relative bg-gray-100 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl shadow-xl p-8 border-2 border-gray-200">
 
         {/* Close Button */}
         <button
@@ -96,14 +96,16 @@ export default function ResultPopUp({ respondent, onClose }: ResultPopUpProps) {
         </button>
 
         {/* Respondent Info */}
-        <h2 className="text-2xl font-bold mb-4">
-          {respondent.name}'s Information
+        <h2 className="font-light">Respondent Information</h2>
+        <h2 className="text-2xl font-bold mb-2">
+          {respondent.name} 
         </h2>
 
-        <div className="mb-6 space-y-1 text-sm">
+        <div className="mb-2 space-y-1 text-sm">
           <p><strong>Barangay:</strong> {respondent.barangay ?? "N/A"}</p>
           <p><strong>Position:</strong> {respondent.position_family}</p>
           <p><strong>Children:</strong> {respondent.num_children}</p>
+          <p><strong>4PS Beneficiary: </strong>{respondent.is_4ps_beneficiary ? "Yes" : "No"}</p>
         </div>
 
         <h3 className="text-xl font-semibold border-b pb-2 mb-4">

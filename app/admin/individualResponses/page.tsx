@@ -11,7 +11,7 @@ export default function Settings(){
     console.log(search)
 
     return(
-    <main>
+    <main className="px-10">
         <h1 className="font-black text-3xl py-5 px-2">Individual Response</h1>
         <Separator/>
         <div className="mt-5">

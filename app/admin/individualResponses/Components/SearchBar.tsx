@@ -16,7 +16,7 @@ export function InputInline({ value, onChange }: Props) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
-      <Button onClick={() => onChange(value)}>Search</Button>
+      {/* <Button onClick={() => onChange(value)}>Search</Button> */}
     </Field>
   );
 }

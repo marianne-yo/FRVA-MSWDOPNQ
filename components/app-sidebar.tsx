@@ -19,7 +19,7 @@ import {
   LayoutDashboard,
   FileText,
   BarChart3,
-  Settings,
+  PersonStanding,
   LogOut
 } from "lucide-react"
 
@@ -27,7 +27,7 @@ const links = [
   { name: "Summary", href: "/admin/summary", icon: LayoutDashboard },
   { name: "Responses", href: "/admin/responses", icon: FileText },
   { name: "Per Barangay Responses", href: "/admin/perBarangayResponses", icon: BarChart3 },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Individual Responses", href: "/admin/individualResponses", icon: PersonStanding },
 ];
 
 export function AppSidebar() {
@@ -71,19 +71,20 @@ route.push("/");
           return (
             <SidebarMenuItem key={link.href}>
               <SidebarMenuButton
+                size={"lg"}
                 asChild
                 className={
                   isActive
-                    ? "border-l-4 border-blue-500 bg-blue-100 font-semibold"
+                    ? "border-l-3 border-blue-500 bg-blue-100 font-semibold py-8"
                     : "hover:bg-gray-100"
                 }
               >
                 <Link
                   href={link.href}
-                  className="flex items-center gap-2 text-black"
+                  className="flex items-center gap-2 text-black text-[0.9rem] font-medium"
                 >
                   <Icon
-                    size={18}
+                    size={24}
                     className={isActive ? "text-black" : "text-gray-500"}
                   />
                   {link.name}
