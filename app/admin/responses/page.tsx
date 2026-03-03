@@ -228,7 +228,7 @@ export default function Response() {
                     {paginatedRespondents.map((r) => (
                       <TableRow key={r.respondent_id}>
                         <TableCell className="font-medium">{r.name}</TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium text-center">
                           {r.barangay}
                         </TableCell>
                         <TableCell className="font-medium text-center bg-amber-200">
