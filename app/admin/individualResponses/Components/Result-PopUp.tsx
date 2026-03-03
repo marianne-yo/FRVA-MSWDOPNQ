@@ -109,7 +109,7 @@ export default function ResultPopUp({ respondent, onClose }: ResultPopUpProps) {
         </div>
 
         <h3 className="text-xl font-semibold border-b pb-2 mb-4">
-          Part I. Individual Life Cycle Risks
+          User Responses
         </h3>
 
         {/* Loading Skeleton */}

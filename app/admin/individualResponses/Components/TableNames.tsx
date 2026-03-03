@@ -22,6 +22,7 @@ import {
 
 import { FaRegTrashAlt } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import ConfirmDeletePopUp from "./ConfirmDeletePopUp";
 
 type Respondent = {
   respondent_id: string;
@@ -41,6 +42,7 @@ function TableNames({ search }: { search: string }) {
   const itemsPerPage = 10
 
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
+  const [Delete, setDelete] = useState<Respondent | null>(null);
 
   useEffect(() => {
     const fetchRespondents = async () => {
@@ -123,7 +125,7 @@ useEffect(() => {
                   <Button
                   variant={"destructive"}
                   size={"icon-lg"}
-                  onClick={() => setSelectedRespondent(r)}
+                  onClick={() => setDelete(r)}
                   className="bg-red-500 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer">
                     <FaRegTrashAlt />
                   </Button>
@@ -190,6 +192,18 @@ useEffect(() => {
   <ResultPopUp
     respondent={selectedRespondent}
     onClose={() => setSelectedRespondent(null)}
+  />
+)}
+
+{Delete && (
+  <ConfirmDeletePopUp
+    delRespondent={Delete}
+    onClose={() => setDelete(null)}
+    onDeleted={(id) => {
+      setData((prev) =>
+        prev.filter((r) => r.respondent_id !== id)
+      );
+    }}
   />
 )}
     </main>

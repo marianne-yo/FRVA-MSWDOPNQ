@@ -23,6 +23,9 @@ import {
   LogOut
 } from "lucide-react"
 
+import NukeDelete from "./Nuke-Delete"
+import { useState } from "react"
+
 const links = [
   { name: "Summary", href: "/admin/summary", icon: LayoutDashboard },
   { name: "Responses", href: "/admin/responses", icon: FileText },
@@ -31,6 +34,8 @@ const links = [
 ];
 
 export function AppSidebar() {
+
+  const [DeleteAll, SetDeleteAll] = useState(false)
 
   const pathname = usePathname();
 
@@ -99,12 +104,20 @@ route.push("/");
     <SidebarFooter className="mt-auto">
       <SidebarMenuButton
         className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold w-full"
+        onClick={()=>SetDeleteAll(true)}>
+        Delete All
+      </SidebarMenuButton>
+      <SidebarMenuButton
+        className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold w-full"
         onClick={handleLogOut}
       >
         <LogOut/>
         Logout
       </SidebarMenuButton>
     </SidebarFooter>
+
+        {DeleteAll && (<NukeDelete onClose={() => SetDeleteAll(false)}/>)}
+
 
   </Sidebar>
 )
