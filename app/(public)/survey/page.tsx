@@ -83,7 +83,7 @@ export default function Page() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [submit, setSubmit] = useState(false);
+  // const [submit, setSubmit] = useState(false);
 
   useEffect(() => {
   const fetchQuestions = async () => {
@@ -189,14 +189,14 @@ export default function Page() {
   })
 
   return (
-    <main className="bg-[#fffffb] min-h-screen p-2 text-black">
+    <main className="bg-[#fffffb] min-h-screen px-3 sm:px-6 py-4 text-black">
       <div className="flex flex-col items-center mb-2">
         <LogoHeader />
         <h2 className="text-center font-bold">Municipal Social Welfare and Development Office Paniqui</h2>
-        <h1 className="text-[2rem] font-bold text-center ">FAMILY SURVEY ON RISKS AND VULNERABILITY</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center">FAMILY SURVEY ON RISKS AND VULNERABILITY</h1>
       </div>
     
-    <Card className="bg-white border border-[#c3b4ff] p-8 w-full max-w-4xl mx-auto rounded-md shadow-sm">
+    <Card className="bg-white border border-[#c3b4ff] p-4 sm:p-6 md:p-4 w-full max-w-4xl mx-auto rounded-md shadow-sm">
         <form onSubmit={(e) => {
           e.preventDefault(); 
           e.stopPropagation();
@@ -313,7 +313,7 @@ export default function Page() {
               </form.Field>
               
               {/* NUMBER OF CHILDREN AND FAMILY MEMBERS */}
-              <div className='grid grid-cols-2 w-full'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
               <form.Field name="numChildren">
                 {(field) => (
                   <div>
@@ -326,7 +326,7 @@ export default function Page() {
                       value={field.state.value.toString()}
                     >
                       <SelectTrigger
-                        className={`w-full max-w-48 ${
+                        className={`w-full ${
                           field.state.meta.isTouched &&
                           field.state.meta.errors.length > 0
                             ? "border-red-500 focus:ring-red-500"
@@ -376,7 +376,7 @@ export default function Page() {
                         value={field.state.value.toString()}
                       >
                       <SelectTrigger
-                        className={`w-full max-w-48 ${
+                        className={`w-full ${
                           field.state.meta.errors.length > 0
                             ? "border-red-500 focus:ring-red-500"
                             : "border-gray-300"
@@ -406,7 +406,7 @@ export default function Page() {
                 </form.Field>
                 </div>
                 {/* 4PS Beneficiary */}
-              <div className="grid grid-cols-2 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                  <form.Field name="is4ps">
                   {(field) => (
                     <div>
@@ -493,7 +493,7 @@ export default function Page() {
               </div>
 
                 {/* BARANGAY AND SITIO/PUROK */}
-              <div className="grid grid-cols-2 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                  <form.Field name="barangay"
                   validators={{ onChange: z.string().min(1, "Please select a barangay") }}
                 >
@@ -505,7 +505,7 @@ export default function Page() {
                         onValueChange={field.handleChange} 
                         defaultValue={field.state.value}
                       >
-                        <SelectTrigger className={`w-full max-w-48 ${field.state.meta.errors.length > 0
+                        <SelectTrigger className={`w-full ${field.state.meta.errors.length > 0
                           ? "border-red-500 focus:ring-red-500"
                           :"border-gray-200"
                         }`}>
@@ -634,7 +634,7 @@ export default function Page() {
                 questions
                   .filter(q => q.indicator_number >= cat.range[0] && q.indicator_number <= cat.range[1])
                   .map((q) => (
-                    <div key={q.q_id} className="p-4 border rounded-lg bg-gray-50 space-y-3">
+                    <div key={q.q_id} className="p-4 sm:p-5 border rounded-lg bg-gray-50 space-y-4"> 
                       <div>
                         <p className="font-bold text-black">
                           {q.indicator_number}. {q.question_text}
@@ -653,17 +653,17 @@ export default function Page() {
                             <RadioGroup 
                               onValueChange={field.handleChange} 
                               value={field.state.value}
-                              className="flex flex-col md:flex-row gap-4"
+                              className="flex flex-col sm:flex-row gap-3 w-full"
                             >
-                              <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
+                              <div className="flex items-center space-x-2 bg-white p-3 rounded border flex-1 min-w-[120px]">
                                 <RadioGroupItem value="WITHIN_THE_YEAR" id={`q${q.q_id}-1`} />
                                 <label htmlFor={`q${q.q_id}-1`} className="text-sm cursor-pointer">Within the Year</label>
                               </div>
-                              <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
+                              <div className="flex items-center space-x-2 bg-white p-3 rounded border flex-1 min-w-[120px]">
                                 <RadioGroupItem value="TWO_FIVE_YEARS_AGO" id={`q${q.q_id}-2`} />
                                 <label htmlFor={`q${q.q_id}-2`} className="text-sm cursor-pointer">2-5 Years Ago</label>
                               </div>
-                              <div className="flex items-center space-x-2 bg-white p-2 rounded border flex-1">
+                              <div className="flex items-center space-x-2 bg-white p-3 rounded border flex-1 min-w-[120px]">
                                 <RadioGroupItem value="NONE" id={`q${q.q_id}-3`} />
                                 <label htmlFor={`q${q.q_id}-3`} className="text-sm cursor-pointer">None</label>
                               </div>
