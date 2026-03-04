@@ -156,7 +156,7 @@ export default function Response() {
     <div>
       <main>
         <h1 className="font-black text-3xl py-5 px-2">RESPONSES</h1>
-        <div className="p-3 w-full flex flex-col justify-start">
+        <div className="p-3 w-full flex flex-col justify-center">
           <Separator />
           {loading ? (
             <div className="flex w-full flex-col gap-2">
@@ -171,14 +171,14 @@ export default function Response() {
           ) : respondents.length === 0 ? (
             <p>No respondents found.</p>
           ) : (
-            <Card className="w-full px-5 bg-linear-to-b from-gray-50 to-gray-100 mt-4 mb-2">
-              <div className="min-h-[500px]">
-                <Table className="bg-blue-50 border rounded-sm shadow-sm">
+            <Card className="w-full max-w-7xl mx-auto px-5 bg-gradient-to-b from-gray-50 to-gray-100 mt-4 mb-2">
+              <div className="min-h-[500px] w-full overflow-x-auto">
+                <Table className="bg-gray-50 border rounded-sm shadow-sm w-full min-w-[900px]">
                   <TableCaption>
                     A list of Respondents in each Barangay
                   </TableCaption>
                   <TableHeader>
-                    <TableRow className="border border-gray-500">
+                    <TableRow className="">
                       {/* Sortable Name column */}
                       <TableHead className="w-full p-4">
                         <button
@@ -210,13 +210,13 @@ export default function Response() {
                           <i>(Bilang ng pamilya sa bahay)</i>
                         </span>
                       </TableHead>
-                      <TableHead className="text-center border-2 border-gray-800">
-                        4Ps Beneficiary <br />
+                      <TableHead className="text-center ">
+                        4P&apos;s Beneficiary <br />
                         <span className="text-[0.7rem]">
-                          <i>(4P's Beneficiary ba?)</i>
+                          <i>(4P&apos;s Beneficiary ba?)</i>
                         </span>
                       </TableHead>
-                      <TableHead className="text-center border-2 border-gray-800">
+                      <TableHead className="text-center ">
                         If YES, since when? <br />
                         <span className="text-[0.7rem]">
                           <i>(Kung OO Kailan Pa?)</i>
@@ -224,14 +224,14 @@ export default function Response() {
                       </TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody className="border border-gray-500">
+                  <TableBody className="">
                     {paginatedRespondents.map((r) => (
                       <TableRow key={r.respondent_id}>
                         <TableCell className="font-medium">{r.name}</TableCell>
                         <TableCell className="font-medium text-center">
                           {r.barangay}
                         </TableCell>
-                        <TableCell className="font-medium text-center bg-amber-200">
+                        <TableCell className="font-medium text-center ">
                           {r.position_family}
                         </TableCell>
                         <TableCell className="font-medium text-center">
@@ -241,11 +241,11 @@ export default function Response() {
                           {r.num_families_in_hh}
                         </TableCell>
                         <TableCell
-                          className={`font-medium text-center border-2 border-gray-800 ${r.is_4ps_beneficiary ? "text-green-500" : "text-red-500   "}`}
+                          className={`font-medium text-center ${r.is_4ps_beneficiary ? "text-green-500" : "text-red-500   "}`}
                         >
                           {r.is_4ps_beneficiary ? "Yes" : "No"}
                         </TableCell>
-                        <TableCell className="font-medium text-center border-2 border-gray-800">
+                        <TableCell className="font-medium text-center">
                           {r.four_ps_since ?? "N/A"}
                         </TableCell>
                       </TableRow>
@@ -255,7 +255,7 @@ export default function Response() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between py-4 px-2">
+              <div className="flex items-center justify-between px-2">
                 <Pagination className=" flex justify-between">
                   <p className="text-sm text-gray-500 ">
                     Showing {(currentPage - 1) * PAGE_SIZE + 1}–

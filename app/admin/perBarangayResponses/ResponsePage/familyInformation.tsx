@@ -71,12 +71,7 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
 
   useEffect(() => {
-    if (!selectedBarangay) {
-      setRespondents([])
-      setCurrentPage(1)
-      setSortDirection(null)
-      return
-    }
+    if (!selectedBarangay) return  
 
     const fetchRespondents = async () => {
       setLoading(true)
@@ -92,12 +87,12 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
         setRespondents(data || [])
       }
 
+      setCurrentPage(1)
+      setSortDirection(null)
       setLoading(false)
     }
 
     fetchRespondents()
-    setCurrentPage(1)
-    setSortDirection(null)
   }, [selectedBarangay])
 
   
@@ -164,12 +159,12 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
       ) : respondents.length === 0 ? (
         <p>No respondents found.</p>
       ) : (
-        <Card className="w-full px-5 bg-linear-to-b from-gray-50 to-gray-100 mb-2">
-        <div className='min-h-[500px]'>
-          <Table className="bg-blue-50 border rounded-sm shadow-sm">
+        <Card className="w-full max-w-7xl mx-auto px-5 bg-gradient-to-b from-gray-50 to-gray-100 mt-4 mb-2">
+        <div className='min-h-[500px] w-full overflow-x-auto"'>
+          <Table className="bg-gray-50 border rounded-sm shadow-sm w-full min-w-[900px]">
             <TableCaption>A list of Respondents in each Barangay</TableCaption>
             <TableHeader>
-              <TableRow className="border border-gray-500">
+              <TableRow className="">
                 {/* Sortable Name column */}
                 <TableHead className="w-full p-4">
                   <button
@@ -189,25 +184,25 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
                 <TableHead className="text-center">
                   Number of Families in the Household <br /><span className="text-[0.7rem]"><i>(Bilang ng pamilya sa bahay)</i></span>
                 </TableHead>
-                <TableHead className="text-center border-2 border-gray-800">
-                  4Ps Beneficiary <br /><span className="text-[0.7rem]"><i>(4P's Beneficiary ba?)</i></span>
+                <TableHead className="text-center">
+                  4Ps Beneficiary <br /><span className="text-[0.7rem]"><i>(4P&apos;s Beneficiary ba?)</i></span>
                 </TableHead>
-                <TableHead className="text-center border-2 border-gray-800">
+                <TableHead className="text-center">
                   If YES, since when? <br /><span className="text-[0.7rem]"><i>(Kung OO Kailan Pa?)</i></span>
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="border border-gray-500">
+            <TableBody className="">
               {paginatedRespondents.map((r) => (
                 <TableRow key={r.respondent_id}>
                   <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell className="font-medium text-center bg-amber-200">{r.position_family}</TableCell>
+                  <TableCell className="font-medium text-center">{r.position_family}</TableCell>
                   <TableCell className="font-medium text-center">{r.num_children}</TableCell>
                   <TableCell className="font-medium text-center">{r.num_families_in_hh}</TableCell>
-                  <TableCell className={`font-medium text-center border-2 border-gray-800 ${r.is_4ps_beneficiary ? 'text-green-500' : 'text-red-500   '}` }>
+                  <TableCell className={`font-medium text-center ${r.is_4ps_beneficiary ? 'text-green-500' : 'text-red-500   '}` }>
                     {r.is_4ps_beneficiary ? "Yes" : "No"}
                   </TableCell>
-                  <TableCell className="font-medium text-center border-2 border-gray-800">
+                  <TableCell className="font-medium text-center">
                     {r.four_ps_since ?? "N/A"}
                   </TableCell>
                 </TableRow>
