@@ -32,6 +32,8 @@ type TopRiskResponse = {
   } | { question_text: string }[] | null
 }
 
+
+
 export default function Summary(){
     
     const [totalRespondents, setTotalRespondents] = useState(0)
@@ -220,19 +222,18 @@ checkUser();
   }
 
     return(
-        <main className="flex flex-col lg:px-20 sm:p-0 md:px-5">
+        <main className="flex flex-col lg:px-10 sm:p-0 md:px-5">
             <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
             <Separator/>
-            <div className="flex flex-wrap justify-center gap-3 px-1 py-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-3 py-5">
                 
                 {/* TOTAL HH SURVEYED */}
-                <Card className="lg:w-[20%] sm:w-[30%] md:w-[30%] px-1 bg-slate-50">
+                <Card className="bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardDescription>Total Household Surveyed</CardDescription>
-                        <CardTitle className="lg:text-4xl font-bold sm:text-3xl md:text-4xl">
+                        <CardTitle className="text-[2rem] lg:text-4xl font-bold sm:text-3xl md:text-4xl">
                             {totalRespondents}
                         </CardTitle>
-
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm font-light text-gray-500">Total number of responses out of ≈30,000 households</p>
@@ -240,10 +241,10 @@ checkUser();
                 </Card>
 
                 {/* Completion Rate (vs 30,000 target) */}
-                <Card className="lg:w-[20%] sm:w-[30%] md:w-[30%] px-1 bg-slate-50">
+                <Card className="bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardDescription>Completion Rate</CardDescription>
-                        <CardTitle className="lg:text-4xl font-bold sm:text-3xl md:text-4xl">{completionRate}%</CardTitle>
+                        <CardTitle className="text-[2rem] lg:text-4xl font-bold sm:text-3xl md:text-4xl">{completionRate}%</CardTitle>
                         
                     </CardHeader>
                     <CardContent>
@@ -253,10 +254,10 @@ checkUser();
                 </Card>
                 
                 {/* High-Risk Households */}
-                <Card className="lg:w-[20%] sm:w-[30%] md:w-[30%] px-1 bg-slate-50">
+                <Card className="bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardDescription>High Risk Households</CardDescription>
-                        <CardTitle className="lg:text-4xl font-bold sm:text-3xl md:text-4xl">{highRiskHouseholds}</CardTitle>
+                        <CardTitle className="text-[2rem] lg:text-4xl font-bold sm:text-3xl md:text-4xl">{highRiskHouseholds}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm font-light text-gray-500">Households with Recent Vulnerabilities</p>
@@ -264,10 +265,10 @@ checkUser();
                 </Card>
 
                 {/* 4Ps Beneficiaries % */}
-                <Card className="lg:w-[20%] sm:w-[30%] md:w-[30%] px-1 bg-slate-50">
+                <Card className=" bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardDescription>4Ps Beneficiaries</CardDescription>
-                        <CardTitle className="lg:text-4xl font-bold sm:text-3xl md:text-4xl">{fourPsPercentage}%</CardTitle>
+                        <CardTitle className="text-[2rem] lg:text-4xl font-bold sm:text-3xl md:text-4xl">{fourPsPercentage}%</CardTitle>
 
                     </CardHeader>
                     <CardContent>
@@ -276,7 +277,7 @@ checkUser();
                 </Card>
 
                 {/* Risk Recency Overview */}
-                <Card className="lg:w-full bg-slate-50">
+                <Card className="col-span-1 sm:col-span-2 lg:col-span-4 bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardTitle>Municipality Risk Recency Distribution</CardTitle>
                         <CardDescription>
@@ -320,7 +321,7 @@ checkUser();
                     </Card>
 
                 {/* Category Risk Distribution */}
-                <Card className="lg:w-full bg-slate-50">
+                <Card className="col-span-1 sm:col-span-2 lg:col-span-4 bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardTitle>Category Risk Distribution</CardTitle>
                         <CardDescription>
@@ -328,44 +329,45 @@ checkUser();
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent>
-                        <ChartContainer config={categoryConfig}>
+                    <CardContent className="overflow-x-auto">
+                        <ChartContainer config={categoryConfig} className="min-w-[500px]">
                             <BarChart
-                                layout="vertical"
-                                accessibilityLayer
-                                data={categoryData}
-                                margin={{ left: 20 }}
+                            layout="vertical"
+                            accessibilityLayer
+                            data={categoryData}
+                            margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
                             >
-                                <CartesianGrid horizontal={false} />
-                                <XAxis type="number" hide />
-                                <YAxis
+                            <CartesianGrid horizontal={false} />
+                            <XAxis type="number" hide />
+                            <YAxis
                                 type="category"
                                 dataKey="name"
                                 tickLine={false}
                                 axisLine={false}
-                                />
-                                <ChartTooltip
+                                width={160}
+                            />
+                            <ChartTooltip
                                 cursor={false}
                                 content={<ChartTooltipContent hideLabel />}
-                                />
-                                <Bar
+                            />
+                            <Bar
                                 dataKey="value"
                                 fill="var(--color-value)"
                                 radius={8}
-                                >
+                            >
                                 <LabelList
-                                    position="right"
-                                    className="fill-foreground"
-                                    fontSize={12}
+                                position="right"
+                                className="fill-foreground"
+                                fontSize={12}
                                 />
-                                </Bar>
+                            </Bar>
                             </BarChart>
-                            </ChartContainer>
-                    </CardContent>
+                        </ChartContainer>
+                        </CardContent>
                     </Card>
 
                 {/* Top 5 Most Reported Recent Vulnerabilities */}
-                <Card className="lg:w-full bg-slate-50">
+                <Card className="col-span-1 sm:col-span-2 lg:col-span-4 bg-linear-to-b from-gray-50 to-gray-100">
                 <CardHeader>
                     <CardTitle>Top 5 Most Reported Recent Vulnerabilities</CardTitle>
                     <CardDescription>
