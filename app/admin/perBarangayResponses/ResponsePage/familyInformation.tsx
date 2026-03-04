@@ -70,41 +70,48 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
 
+  // Fetch respondents
   useEffect(() => {
-    if (!selectedBarangay) return  
+    if (!selectedBarangay) return
 
     const fetchRespondents = async () => {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('respondents')
-        .select('respondent_id, name, position_family, num_children, num_families_in_hh, is_4ps_beneficiary, four_ps_since, barangay')
-        .eq('barangay', selectedBarangay.value)
+      try {
+        const { data, error } = await supabase
+          .from('respondents')
+          .select('respondent_id, name, position_family, num_children, num_families_in_hh, is_4ps_beneficiary, four_ps_since, barangay')
+          .eq('barangay', selectedBarangay.value)
 
-      if (error) {
-        console.error('Error fetching respondents:', error.message)
+        if (error) {
+          console.error('Error fetching respondents:', error.message)
+          setRespondents([])
+        } else {
+          setRespondents(data || [])
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err)
         setRespondents([])
-      } else {
-        setRespondents(data || [])
+      } finally {
+        setCurrentPage(1)
+        setSortDirection(null)
+        setLoading(false)
       }
-
-      setCurrentPage(1)
-      setSortDirection(null)
-      setLoading(false)
     }
 
     fetchRespondents()
   }, [selectedBarangay])
 
-  
+  // Handle sorting
   const handleNameSort = () => {
     setSortDirection((prev) => {
       if (prev === null) return 'asc'
       if (prev === 'asc') return 'desc'
       return null
     })
-    setCurrentPage(1) // reset to page 1 on sort change
+    setCurrentPage(1)
   }
 
+  // Memoized sorted respondents
   const sortedRespondents = useMemo(() => {
     if (sortDirection === null) return respondents
     return [...respondents].sort((a, b) => {
@@ -116,19 +123,24 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
     })
   }, [respondents, sortDirection])
 
-  if (!selectedBarangay) return (
-    <Card className="w-full px-1 bg-slate-50 mb-2">
-      <CardHeader>
-        <CardDescription>No data available. Please select a barangay to view the data.</CardDescription>
-        <CardTitle className="lg:text-5xl font-bold sm:text-3xl md:text-4xl"></CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm font-light text-gray-500"></p>
-      </CardContent>
-      <CardFooter></CardFooter>
-    </Card>
-  )
+  // No barangay selected
+  if (!selectedBarangay) {
+    return (
+      <Card className="w-full border-slate-200 bg-slate-50">
+        <CardHeader>
+          <CardTitle className="text-slate-900">No Barangay Selected</CardTitle>
+          <CardDescription>Please select a barangay to view respondent data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-slate-500">
+            Select a barangay from the list to see family information and respondent details.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
+  // Pagination
   const totalPages = Math.ceil(sortedRespondents.length / PAGE_SIZE)
   const paginatedRespondents = sortedRespondents.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -136,6 +148,7 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
   )
   const pageNumbers = getPageNumbers(currentPage, totalPages)
 
+  // Sort icon
   const SortIcon = sortDirection === 'asc'
     ? ArrowUp
     : sortDirection === 'desc'
@@ -143,127 +156,280 @@ function FamilyInformation({ selectedBarangay }: FamilyInformationProps) {
       : ArrowUpDown
 
   return (
-    <div className="p-4">
-      <h2 className="font-bold text-1.8xl mb-2">Respondents in {selectedBarangay.label}:</h2>
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="font-black text-2xl md:text-3xl text-slate-900 mb-1">
+          Respondents in {selectedBarangay.label}
+        </h2>
+        <p className="text-slate-600">
+          {respondents.length} total {respondents.length === 1 ? 'respondent' : 'respondents'}
+        </p>
+      </div>
 
+      {/* Loading State */}
       {loading ? (
-        <div className="flex w-full flex-col gap-2">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div className="flex gap-4 w-full mt-2" key={index}>
-              <Skeleton className="h-4 flex-1 bg-gray-200" />
-              <Skeleton className="h-4 w-full bg-gray-200" />
-              <Skeleton className="h-4 w-full bg-gray-200" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex gap-4">
+              <Skeleton className="h-16 flex-1 rounded-lg bg-slate-200" />
             </div>
           ))}
         </div>
       ) : respondents.length === 0 ? (
-        <p>No respondents found.</p>
+        /* Empty State */
+        <Card className="border-slate-200 shadow-sm">
+          <CardContent className="pt-12 pb-12 text-center">
+            <p className="text-lg text-slate-500">
+              No respondents found in {selectedBarangay.label}.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
-        <Card className="w-full max-w-7xl mx-auto px-5 bg-gradient-to-b from-gray-50 to-gray-100 mt-4 mb-2">
-        <div className='min-h-[500px] w-full overflow-x-auto"'>
-          <Table className="bg-gray-50 border rounded-sm shadow-sm w-full min-w-[900px]">
-            <TableCaption>A list of Respondents in each Barangay</TableCaption>
-            <TableHeader>
-              <TableRow className="">
-                {/* Sortable Name column */}
-                <TableHead className="w-full p-4">
-                  <button
-                    onClick={handleNameSort}
-                    className="flex items-center gap-1 hover:text-blue-700 transition-colors font-semibold">
-                    Name
-                    <SortIcon className="w-4 h-4" />
-                  </button>
-                  <span className="text-[0.7rem]"><i>(Pangalan)</i></span>
-                </TableHead>
-                <TableHead className="text-center">
-                  Position in the Family <br /><span className="text-[0.7rem]"><i>(Posisyon sa Pamilya)</i></span>
-                </TableHead>
-                <TableHead className="text-center">
-                  Number of Children <br /><span className="text-[0.7rem]"><i>(Bilang ng Anak)</i></span>
-                </TableHead>
-                <TableHead className="text-center">
-                  Number of Families in the Household <br /><span className="text-[0.7rem]"><i>(Bilang ng pamilya sa bahay)</i></span>
-                </TableHead>
-                <TableHead className="text-center">
-                  4Ps Beneficiary <br /><span className="text-[0.7rem]"><i>(4P&apos;s Beneficiary ba?)</i></span>
-                </TableHead>
-                <TableHead className="text-center">
-                  If YES, since when? <br /><span className="text-[0.7rem]"><i>(Kung OO Kailan Pa?)</i></span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="">
-              {paginatedRespondents.map((r) => (
-                <TableRow key={r.respondent_id}>
-                  <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell className="font-medium text-center">{r.position_family}</TableCell>
-                  <TableCell className="font-medium text-center">{r.num_children}</TableCell>
-                  <TableCell className="font-medium text-center">{r.num_families_in_hh}</TableCell>
-                  <TableCell className={`font-medium text-center ${r.is_4ps_beneficiary ? 'text-green-500' : 'text-red-500   '}` }>
-                    {r.is_4ps_beneficiary ? "Yes" : "No"}
-                  </TableCell>
-                  <TableCell className="font-medium text-center">
-                    {r.four_ps_since ?? "N/A"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-hidden rounded-lg border border-slate-200 shadow-sm bg-white">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableCaption className="text-sm text-slate-600 py-3">
+                  A list of Respondents in {selectedBarangay.label}
+                </TableCaption>
+                <TableHeader>
+                  <TableRow className="border-b border-slate-200 bg-slate-50 hover:bg-slate-50">
+                    {/* Name Column */}
+                    <TableHead className="px-4 py-3 text-left">
+                      <button
+                        onClick={handleNameSort}
+                        className="flex items-center gap-2 font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+                      >
+                        Name
+                        <SortIcon className="w-4 h-4" />
+                      </button>
+                      <span className="text-xs text-slate-500 italic block mt-1">
+                        Pangalan
+                      </span>
+                    </TableHead>
+
+                    {/* Position Column */}
+                    <TableHead className="px-4 py-3 text-center font-semibold text-slate-700">
+                      <div>Position in Family</div>
+                      <span className="text-xs text-slate-500 italic">
+                        Posisyon sa Pamilya
+                      </span>
+                    </TableHead>
+
+                    {/* Children Column */}
+                    <TableHead className="px-4 py-3 text-center font-semibold text-slate-700">
+                      <div>Children</div>
+                      <span className="text-xs text-slate-500 italic">
+                        Bilang ng Anak
+                      </span>
+                    </TableHead>
+
+                    {/* Families in HH Column */}
+                    <TableHead className="px-4 py-3 text-center font-semibold text-slate-700">
+                      <div>Families in HH</div>
+                      <span className="text-xs text-slate-500 italic">
+                        Bilang ng pamilya
+                      </span>
+                    </TableHead>
+
+                    {/* 4Ps Beneficiary Column */}
+                    <TableHead className="px-4 py-3 text-center font-semibold text-slate-700">
+                      <div>4Ps Beneficiary</div>
+                      <span className="text-xs text-slate-500 italic">
+                        4P&apos;s Beneficiary ba?
+                      </span>
+                    </TableHead>
+
+                    {/* 4Ps Since Column */}
+                    <TableHead className="px-4 py-3 text-center font-semibold text-slate-700">
+                      <div>Since When</div>
+                      <span className="text-xs text-slate-500 italic">
+                        Kung OO Kailan Pa?
+                      </span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedRespondents.map((r) => (
+                    <TableRow
+                      key={r.respondent_id}
+                      className="border-b border-slate-200 hover:bg-blue-50 transition-colors"
+                    >
+                      <TableCell className="px-4 py-3 font-medium text-slate-900">
+                        {r.name}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-center text-slate-700">
+                        {r.position_family}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-center text-slate-700">
+                        {r.num_children}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-center text-slate-700">
+                        {r.num_families_in_hh}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                            r.is_4ps_beneficiary
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {r.is_4ps_beneficiary ? 'Yes' : 'No'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-center text-slate-700">
+                        {r.four_ps_since ?? 'N/A'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {paginatedRespondents.map((r) => (
+              <Card
+                key={r.respondent_id}
+                className="border-slate-200 shadow-sm hover:shadow-md transition-shadow bg-white"
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-slate-900">
+                    {r.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Position
+                      </p>
+                      <p className="text-sm text-slate-900 mt-1">
+                        {r.position_family}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Children
+                      </p>
+                      <p className="text-sm text-slate-900 mt-1">
+                        {r.num_children}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Families in HH
+                      </p>
+                      <p className="text-sm text-slate-900 mt-1">
+                        {r.num_families_in_hh}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        4Ps Beneficiary
+                      </p>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                          r.is_4ps_beneficiary
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {r.is_4ps_beneficiary ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                  </div>
+                  {(r.four_ps_since || r.is_4ps_beneficiary) && (
+                    <div className="pt-3 border-t border-slate-200">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        4Ps Since
+                      </p>
+                      <p className="text-sm text-slate-900 mt-1">
+                        {r.four_ps_since ?? 'N/A'}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between py-4 px-2">
-            <Pagination className=' flex justify-between'>
-            <p className="text-sm text-gray-500 ">
-              Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sortedRespondents.length)} of {sortedRespondents.length} respondents
-            </p>
-              <PaginationContent>
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+              <p className="text-sm text-slate-600 text-center sm:text-left">
+                Showing{' '}
+                <span className="font-semibold">
+                  {(currentPage - 1) * PAGE_SIZE + 1}
+                </span>
+                –
+                <span className="font-semibold">
+                  {Math.min(currentPage * PAGE_SIZE, sortedRespondents.length)}
+                </span>{' '}
+                of{' '}
+                <span className="font-semibold">
+                  {sortedRespondents.length}
+                </span>{' '}
+                respondents
+              </p>
+              <Pagination>
+                <PaginationContent className="gap-1">
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (currentPage > 1) setCurrentPage(currentPage - 1)
+                      }}
+                      className={`cursor-pointer ${
+                        currentPage === 1 ? 'pointer-events-none opacity-50' : ''
+                      }`}
+                    />
+                  </PaginationItem>
 
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      if (currentPage > 1) setCurrentPage((p) => p - 1)
-                    }}
-                    aria-disabled={currentPage === 1}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}/>
-                </PaginationItem>
+                  {pageNumbers.map((page, idx) =>
+                    page === 'ellipsis' ? (
+                      <PaginationItem key={`ellipsis-${idx}`}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === page}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setCurrentPage(page as number)
+                          }}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ),
+                  )}
 
-                {pageNumbers.map((page, index) =>
-                  page === 'ellipsis' ? (
-                    <PaginationItem key={`ellipsis-${index}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  ) : (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href="#"
-                        isActive={currentPage === page}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setCurrentPage(page)
-                        }}>
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                )}
-
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      if (currentPage < totalPages) setCurrentPage((p) => p + 1)
-                    }}
-                    aria-disabled={currentPage === totalPages}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}/>
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        </Card>
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                      }}
+                      className={`cursor-pointer ${
+                        currentPage === totalPages ? 'pointer-events-none opacity-50' : ''
+                      }`}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
