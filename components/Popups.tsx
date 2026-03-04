@@ -74,6 +74,7 @@ setLoading(true);
                     <Input
                     value={email}
                     onChange={(e)=>setEmail(e.target.value)} 
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                     type='text' 
                     placeholder='Email'
                     className='text-black text-lg sm:text-md md:text-md lg:text-lg'
@@ -84,6 +85,7 @@ setLoading(true);
                     className='pr-10 text-black text-lg sm:text-md md:text-md lg:text-lg'
                     value={password}
                     onChange={(e)=>setPassword(e.target.value)} 
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                     type={show ? "text":"password"} 
                     placeholder='Password' />
                     

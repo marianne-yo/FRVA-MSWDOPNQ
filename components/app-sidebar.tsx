@@ -20,7 +20,8 @@ import {
   FileText,
   BarChart3,
   PersonStanding,
-  LogOut
+  LogOut,
+  Trash2Icon
 } from "lucide-react"
 
 import NukeDelete from "./Nuke-Delete"
@@ -103,12 +104,16 @@ route.push("/");
 
     <SidebarFooter className="mt-auto">
       <SidebarMenuButton
-        className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold w-full"
+      variant={'outline'}
+        className="hover:bg-red-500 hover:text-white text-black p-5 text-[1rem] font-bold w-full cursor-pointer border border-red-100"
         onClick={()=>SetDeleteAll(true)}>
+        <Trash2Icon />
         Delete All
       </SidebarMenuButton>
+
       <SidebarMenuButton
-        className="hover:bg-red-500 hover:text-white text-black bg-red-200 p-5 text-[1rem] font-bold w-full"
+        variant={'outline'}
+        className="hover:bg-red-500 hover:text-white text-black p-5 text-[1rem] font-bold w-full cursor-pointer border border-red-100"
         onClick={handleLogOut}
       >
         <LogOut/>
