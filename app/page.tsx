@@ -5,23 +5,31 @@ import LogoHeader from './../components/LogoHeader';
 import { useState } from 'react';
 
 import Popups from '@/components/Popups';
+import { Button } from '@/components/ui/button';
+import { ClipboardList, UserIcon } from 'lucide-react';
 
 export default function Home() {
   const [open,isOpen] = useState(false);
 
   return (
     <main className=''>
-    <div className="h-screen relative bg-cover bg-center bg-no-repeat flex items-center justify-center" 
+    <div className="h-screen relative bg-cover bg-center bg-no-repeat flex items-center justify-center max-w-full" 
     style={{ backgroundImage: "url('/Logo/Paniqui-Municipal-Hall.jpg')" }}>
-      <div className='absolute inset-0 bg-black opacity-60'></div>
+      <div className='absolute inset-0 bg-black opacity-70'></div>
 
-    <div className="flex flex-col lg:gap-7 md:gap-6 gap-5 items-center border-2 border-[#939393] shadow-xl p-4 md:h-[80%] lg:h-[74%] h-[60%] lg:w-[45%] md:w-[45%] w-[80%] backdrop-blur-md rounded-3xl text-shadow-black text-shadow-2xs">
+    <div className="flex flex-col lg:gap-7 md:gap-6 sm:gap-5 items-center border-2 justify-center border-[#c9c9c9] shadow-xl p-4 h-[65%] md:h-[65%] lg:h-[75%] sm:h-[70%] w-[80%] lg:w-[50%] md:w-[65%] sm:w-[70%] backdrop-blur-xl rounded-3xl bg-gray-500/30">
 
 {LogoHeader()}
 
-    <div className='text-center flex flex-col gap-2'>
-      <h1 className='text-[0.8rem] md:text-[1.5rem] lg:text-[1.8rem] text-white'>MUNICIPALITY OF PANIQUI</h1>
-      <p className='text-[0.5rem] md:text-[0.7rem] lg:text-[0.8rem] text-white'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dicta placeat nemo vero provident assumenda saepe non labore autem! Sunt libero laudantium animi fugiat quasi nulla beatae delectus consequatur, quaerat adipisci.</p>
+    <div className='text-center flex flex-col gap-1'>
+      <h1 className='text-[1.5rem] sm:text-[1.3rem] md:text-[1.4rem] lg:text-[1.8rem] text-white font-bold'>MUNICIPALITY OF PANIQUI</h1>
+      <p className='text-[0.8rem] sm:text-[0.75rem] md:text-[0.7rem] lg:text-[0.8rem] text-white font-light text-pretty'>
+        Gomez Street, Poblacion Norte, Paniqui, Tarlac
+        <br />
+        <span>Email : mswdopaniqui2307@gmail.com</span>
+        <br />
+        <span>Telephone No. : (045) 931-2161 local 114</span>
+      </p>
     </div>
 
     <Popups
@@ -29,25 +37,23 @@ export default function Home() {
     onclose={()=>isOpen(false)}
     ></Popups>
 
-    <div className='flex flex-col  p-5 gap-4 lg:w-[55%] w-full '>
-      <Link href={'/DataPrivacy'}><button className='lg:p-4 md:p-3 p-2 w-full rounded-[5px] bg-[#FF4549] cursor-pointer hover:bg-[#e2191c] text-[0.6rem] md:text-[0.8rem] lg:text-[1rem] text-white'>TAKE SURVEY</button></Link>
+    <div className='flex flex-col p-5 gap-4 lg:w-[55%] w-full '>
+      <Link href={'/DataPrivacy'}>
+        <Button size={"icon-lg"} className='p-6 lg:p-8 md:p-8 sm:p-8 w-full rounded-[5px] bg-[#FF4549] cursor-pointer hover:bg-[#e2191c] text-[1rem] sm:text-[0.9rem] md:text-[1rem] lg:text-[1.2rem] font-bold text-white'>
+          <ClipboardList size={30} />
+          TAKE SURVEY
+        </Button>
+      </Link>
 
-      <button className='lg:p-4 md:p-3 p-2 w-full rounded-[5px] cursor-pointer bg-[#FFAE35] hover:bg-[#e08d11] text-[0.6rem] md:text-[0.8rem] lg:text-[1rem] text-black' onClick={() => (isOpen (true))}>LOGIN AS ADMIN</button>
+      <Button size={"icon-lg"} className='p-6 lg:p-8 md:p-8 sm:p-8 w-full rounded-[5px] cursor-pointer bg-[#ff9c07] hover:bg-[#e08d11] text-[1rem] sm:text-[0.9rem] md:text-[1rem] lg:text-[1.2rem] text-white font-bold' onClick={() => (isOpen(true))}>
+        <UserIcon size={30} />
+        LOGIN AS ADMIN
+      </Button>
     </div>
-    <div className='text-center flex flex-col gap-2'>
-      <p className='text-[0.5rem] md:text-[0.7rem] lg:text-[0.8rem] text-white'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dicta placeat nemo vero provident assumenda saepe non labore autem! Sunt libero laudantium animi fugiat quasi nulla beatae delectus consequatur, quaerat adipisci.</p>
+
+    <div className='text-center flex flex-col gap-2 mt-2'>
+      <p className='text-[0.7rem] sm:text-[0.7rem] md:text-[0.7rem] lg:text-[0.8rem] text-gray-300/70 font-extralight'>All data and information indicated herein shall be used for identification purposes for the implementation of disaster risk reduction and management (DRRM) programs, projects, and activities and its disclosure shall be in compliance to Republic Act 10173 (Data Privacy Act of 2012).</p>
     </div>
-
-    
-
-    <a
-      className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-      href="/admin/summary"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Admin Test
-    </a>
 
     </div>
   </div>
