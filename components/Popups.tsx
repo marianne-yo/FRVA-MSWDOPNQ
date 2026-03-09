@@ -63,7 +63,7 @@ setLoading(true);
         if(!isOpen) return null    
     return (
         <div className='inset-0 z-50 fixed flex items-center justify-center'>
-            <Card className='bg-cover p-3 gap-2 bg-center bg-no-repeat border relative lg:w-[50%] md:w-[60%] sm:w-[70%] w-[90%] h-[40%] sm:h-[45%] flex flex-col items-center bg-white text-black '>
+            <Card className='bg-cover p-3 gap-2 bg-center bg-no-repeat border relative lg:w-[50%] md:w-[60%] sm:w-[70%] w-[90%] flex flex-col items-center bg-white text-black '>
                 <CardTitle className='text-[1rem] sm:text-[1.25rem] md:text-[1.25rem] lg:text-[1.5rem] font-bold'>LOGIN AS ADMIN</CardTitle>
                 <button
                 className='absolute right-3 top-3 cursor-pointer'
@@ -77,7 +77,7 @@ setLoading(true);
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                     type='text' 
                     placeholder='Email'
-                    className='text-black text-lg sm:text-md md:text-md lg:text-lg'
+                    className='text-black text-md'
                     />
                      
                 <div className='relative w-full'>

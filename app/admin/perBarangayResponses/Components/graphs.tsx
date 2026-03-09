@@ -68,7 +68,7 @@ export function GraphResponse({ choiceCounts, choiceOrder }: Props) {
           ))}
           <LabelList
             dataKey="percentage"
-            position="right"
+            position="center"
             className="fill-foreground font-bold"
             fontSize={12}
           />

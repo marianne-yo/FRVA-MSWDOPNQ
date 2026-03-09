@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
@@ -22,6 +21,7 @@ import {
 
 import { FaRegTrashAlt } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import ConfirmDeletePopUp from "./ConfirmDeletePopUp";
 
 type Respondent = {
@@ -67,145 +67,263 @@ function TableNames({ search }: { search: string }) {
   const filtered = data.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
   );
-  
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage)
 
-const paginatedData = filtered.slice(
-  (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage
-)
-useEffect(() => {
-  setCurrentPage(1)
-}, [search])
+  const paginatedData = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search])
 
   return (
-    <main className="mt-5">
+    <main className="w-full px-2 sm:px-4 py-4">
       {loading ? (
-        <div className="flex w-full flex-col gap-2">
+        <div className="flex w-full flex-col gap-3">
           {Array.from({ length: 5 }).map((_, index) => (
-            <div className="flex gap-4 w-full mt-2" key={index}>
-              <Skeleton className="h-4 flex-1 bg-gray-200" />
-              <Skeleton className="h-4 w-full bg-gray-200" />
-              <Skeleton className="h-4 w-full bg-gray-200" />
+            <div className="flex gap-4 w-full" key={index}>
+              <Skeleton className="h-4 flex-1 bg-gray-200 rounded" />
+              <Skeleton className="h-4 flex-1 bg-gray-200 rounded" />
             </div>
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <p>No respondents found</p>
+        <Card className="p-6 text-center bg-blue-50">
+          <p className="text-gray-600">No respondents found</p>
+        </Card>
       ) : (
-        <Table className="bg-blue-100/10 rounded-lg shadow-sm">
-          <TableCaption>A list of Respondents in each Barangay</TableCaption>
-          <TableHeader>
-            <TableRow className="rounded-t-lg ">
-              <TableHead className="w-full p-6">
-                Name <span className="text-[0.7rem]"><i>(Pangalan)</i></span>
-              </TableHead>
-              <TableHead className="text-center p-6 ">Barangay</TableHead>
-              <TableHead className="text-center p-6">View Response</TableHead>
-              <TableHead className="text-center p-6">Delete Record</TableHead>
-            </TableRow>
-          </TableHeader>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <Table className="bg-blue-100/10 rounded-lg shadow-sm w-full">
+              <TableCaption>A list of Respondents in each Barangay</TableCaption>
+              <TableHeader>
+                <TableRow className="rounded-t-lg">
+                  <TableHead className="w-full p-4 sm:p-6">
+                    Name <span className="text-[0.7rem]"><i>(Pangalan)</i></span>
+                  </TableHead>
+                  <TableHead className="text-center p-4 sm:p-6">Barangay</TableHead>
+                  <TableHead className="text-center p-4 sm:p-6">View Response</TableHead>
+                  <TableHead className="text-center p-4 sm:p-6">Delete Record</TableHead>
+                </TableRow>
+              </TableHeader>
 
-          <TableBody className="">
+              <TableBody>
+                {paginatedData.map((r) => (
+                  <TableRow key={r.respondent_id}>
+                    <TableCell className="font-medium text-[0.95rem] px-4 sm:px-6">{r.name}</TableCell>
+                    <TableCell className="font-medium text-center text-[0.95rem]">
+                      {r.barangay ? r.barangay.charAt(0).toUpperCase() + r.barangay.slice(1) : "N/A"}
+                    </TableCell>
+                    <TableCell className="font-medium text-center">
+                      <Button
+                        variant={"outline"}
+                        size={"icon-lg"}
+                        onClick={() => setSelectedRespondent(r)}
+                        className="border-amber-200 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer hover:bg-amber-50"
+                      >
+                        <IoListSharp />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="font-medium text-center">
+                      <Button
+                        variant={"destructive"}
+                        size={"icon-lg"}
+                        onClick={() => setDelete(r)}
+                        className="bg-red-500 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer hover:bg-red-600"
+                      >
+                        <FaRegTrashAlt />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col gap-3">
             {paginatedData.map((r) => (
-              <TableRow key={r.respondent_id}>
-                <TableCell className="font-medium text-[0.95rem] px-6">{r.name}</TableCell>
-                <TableCell className="font-medium text-center text-[0.95rem]">{r.barangay? r.barangay.charAt(0).toUpperCase() + r.barangay.slice(1): "N/A"}</TableCell>
-                <TableCell className="font-medium text-center">
-                  <Button
-                  variant={"outline"}
-                  size={"icon-lg"}
-                  onClick={() => setSelectedRespondent(r)}
-                  className="border-amber-200 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer">
-                    <IoListSharp />
-                  </Button>
-                </TableCell>
-                <TableCell className="font-medium text-center">
-                  <Button
-                  variant={"destructive"}
-                  size={"icon-lg"}
-                  onClick={() => setDelete(r)}
-                  className="bg-red-500 px-4 py-2 rounded-[5px] text-[1.2rem] cursor-pointer">
-                    <FaRegTrashAlt />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-      )}
-      
-              {totalPages > 1 && (
-  <div className="mt-4 flex justify-center">
-    <Pagination>
-      <PaginationContent>
-
-        {/* Previous */}
-        <PaginationItem>
-          <PaginationPrevious
-            onClick={() =>
-              setCurrentPage((prev) => Math.max(prev - 1, 1))
-            }
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-          />
-        </PaginationItem>
-
-        {/* Page Numbers */}
-        {Array.from({ length: totalPages }).map((_, index) => {
-          const page = index + 1
-          return (
-            <PaginationItem key={page}>
-              <PaginationLink
-                isActive={currentPage === page}
-                onClick={() => setCurrentPage(page)}
+              <Card
+                key={r.respondent_id}
+                className="p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
               >
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          )
-        })}
+                {/* Name */}
+                <div className="mb-3">
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900">
+                    {r.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">(Pangalan)</p>
+                </div>
 
-        {/* Next */}
-        <PaginationItem>
-          <PaginationNext
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(prev + 1, totalPages)
-              )
-            }
-            className={
-              currentPage === totalPages
-                ? "pointer-events-none opacity-50"
-                : ""
-            }
-          />
-        </PaginationItem>
+                {/* Barangay */}
+                <div className="mb-4 pb-4 border-b border-gray-200">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Barangay</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {r.barangay ? r.barangay.charAt(0).toUpperCase() + r.barangay.slice(1) : "N/A"}
+                  </p>
+                </div>
 
-      </PaginationContent>
-    </Pagination>
-  </div>
-)}
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant={"outline"}
+                    onClick={() => setSelectedRespondent(r)}
+                    className="flex-1 border-amber-200 hover:bg-amber-50 rounded-md py-2 font-medium text-sm flex items-center justify-center gap-2"
+                  >
+                    <IoListSharp className="text-lg" />
+                    View Response
+                  </Button>
+                  <Button
+                    variant={"destructive"}
+                    onClick={() => setDelete(r)}
+                    className="flex-1 bg-red-500 hover:bg-red-600 rounded-md py-2 font-medium text-sm flex items-center justify-center gap-2"
+                  >
+                    <FaRegTrashAlt className="text-lg" />
+                    Delete
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center overflow-x-auto">
+              <Pagination>
+                <PaginationContent className="flex flex-wrap gap-1">
+                  {/* Previous */}
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+
+                  {/* Page Numbers - Simplified on mobile */}
+                  {totalPages <= 5 ? (
+                    // Show all page numbers if 5 or fewer
+                    Array.from({ length: totalPages }).map((_, index) => {
+                      const page = index + 1
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            isActive={currentPage === page}
+                            onClick={() => setCurrentPage(page)}
+                            className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    })
+                  ) : (
+                    // Show smart pagination on mobile
+                    <>
+                      {currentPage > 2 && (
+                        <>
+                          <PaginationItem>
+                            <PaginationLink
+                              isActive={currentPage === 1}
+                              onClick={() => setCurrentPage(1)}
+                              className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+                            >
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                          {currentPage > 3 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                        </>
+                      )}
+
+                      {/* Current page and neighbors */}
+                      {Array.from({ length: 3 }).map((_, offset) => {
+                        const page = currentPage - 1 + offset
+                        if (page > 0 && page <= totalPages) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                isActive={currentPage === page}
+                                onClick={() => setCurrentPage(page)}
+                                className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          )
+                        }
+                        return null
+                      })}
+
+                      {currentPage < totalPages - 1 && (
+                        <>
+                          {currentPage < totalPages - 2 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                          <PaginationItem>
+                            <PaginationLink
+                              isActive={currentPage === totalPages}
+                              onClick={() => setCurrentPage(totalPages)}
+                              className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+                            >
+                              {totalPages}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* Next */}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(prev + 1, totalPages)
+                        )
+                      }
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
+      )}
 
       {selectedRespondent && (
-  <ResultPopUp
-    respondent={selectedRespondent}
-    onClose={() => setSelectedRespondent(null)}
-  />
-)}
+        <ResultPopUp
+          respondent={selectedRespondent}
+          onClose={() => setSelectedRespondent(null)}
+        />
+      )}
 
-{Delete && (
-  <ConfirmDeletePopUp
-    delRespondent={Delete}
-    onClose={() => setDelete(null)}
-    onDeleted={(id) => {
-      setData((prev) =>
-        prev.filter((r) => r.respondent_id !== id)
-      );
-    }}
-  />
-)}
+      {Delete && (
+        <ConfirmDeletePopUp
+          delRespondent={Delete}
+          onClose={() => setDelete(null)}
+          onDeleted={(id) => {
+            setData((prev) =>
+              prev.filter((r) => r.respondent_id !== id)
+            );
+          }}
+        />
+      )}
     </main>
   );
 }
