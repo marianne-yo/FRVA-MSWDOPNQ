@@ -14,7 +14,7 @@ const [isChecked, setChecked] = useState(false);
 
   return (
   <main
-    className='bg-center bg-no-repeat relative h-screen overflow-hidden'
+    className='bg-center bg-no-repeat bg-cover relative h-screen overflow-hidden'
     style={{ backgroundImage: "url('/Logo/Paniqui-Municipal-Hall.jpg')" }}
   >
     <div className='absolute inset-0 bg-black opacity-60'></div>
@@ -89,7 +89,7 @@ const [isChecked, setChecked] = useState(false);
                         text-white font-bold text-[0.8rem] sm:text-[0.9rem] lg:text-[1rem]
                         transition-colors duration-200
                         ${isChecked
-                          ? "bg-[#fffb00]  text-2xl text-black font-bold hover:bg-[#9d7f03] hover:text-white cursor-pointer"
+                          ? "bg-[#fffb00] text-black font-bold hover:bg-[#9d7f03] hover:text-white cursor-pointer"
                           : "bg-gray-600 cursor-not-allowed"
                         }`}
           >

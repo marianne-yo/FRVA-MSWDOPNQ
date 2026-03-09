@@ -11,7 +11,7 @@ export default function AdminLayout({
       <div className="flex min-h-screen w-full">
         <AppSidebar />
 
-        <main className="flex-1 p-6">
+        <main className="flex-1 w-full">
           <SidebarTrigger className="mb-4" />
           {children}
         </main>

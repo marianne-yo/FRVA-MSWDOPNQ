@@ -122,7 +122,7 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
 
   return (
     <div className="text-black">
-      <h2 className="scroll-m-20 border-b pb-2 text-4xl font-semibold tracking-tight first:mt-0 mb-5">
+      <h2 className="scroll-m-20 border-b pb-2 lg:text-4xl text-2xl font-semibold tracking-tight first:mt-0 mb-5">
         Part I. Individual Life Cycle Risks
       </h2>
 

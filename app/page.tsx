@@ -17,7 +17,7 @@ export default function Home() {
     style={{ backgroundImage: "url('/Logo/Paniqui-Municipal-Hall.jpg')" }}>
       <div className='absolute inset-0 bg-black opacity-70'></div>
 
-    <div className="flex flex-col lg:gap-7 md:gap-6 sm:gap-5 items-center border-2 justify-center border-[#c9c9c9] shadow-xl p-4 h-[65%] md:h-[65%] lg:h-[75%] sm:h-[70%] w-[80%] lg:w-[50%] md:w-[65%] sm:w-[70%] backdrop-blur-xl rounded-3xl bg-gray-500/30">
+    <div className="flex flex-col lg:gap-7 md:gap-6 sm:gap-5 items-center border-2 justify-center border-[#c9c9c9] shadow-xl p-4  w-[80%] lg:w-[50%] md:w-[65%] sm:w-[70%] backdrop-blur-xl rounded-3xl bg-gray-500/30">
 
 {LogoHeader()}
 
