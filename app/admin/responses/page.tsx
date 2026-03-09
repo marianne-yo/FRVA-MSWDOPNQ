@@ -24,7 +24,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Download } from "lucide-react";
 
 import PartOne from "./Components/Responses-PerPart/PartOne";
 import BarangayResponses from "./Components/Responses-PerPart/Barangay";
@@ -36,6 +36,7 @@ import FourPsSinceSummary from "./Components/Responses-PerPart/FourpcSince";
 import PartTwo from "./Components/Responses-PerPart/PartTwo";
 import PartThree from "./Components/Responses-PerPart/PartThree";
 import PartFour from "./Components/Responses-PerPart/PartFour";
+import { Button } from "@/components/ui/button";
 
 type Respondent = {
   respondent_id: string;
@@ -160,6 +161,15 @@ export default function Response() {
         <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 sm:px-6">
           <h1 className="font-black text-2xl sm:text-3xl">RESPONSES</h1>
         </div>
+
+        <Button
+          variant="ghost"
+          className="mx-4 mt-4 flex items-center gap-2 hover:bg-green-200 cursor-pointer"
+        >
+          <Download className="w-4 h-4" />
+          Export Data to Excel
+
+        </Button>
 
         <div className="w-full flex flex-col justify-center p-4 sm:p-6">
           {loading ? (
