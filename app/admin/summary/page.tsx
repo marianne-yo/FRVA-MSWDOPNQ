@@ -6,8 +6,9 @@ import { supabase } from '@/lib/supabase/client'
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 
-import { Spinner } from "@/components/ui/spinner"
 import {BarChart, CartesianGrid, YAxis, XAxis, Bar } from "recharts"
+
+import { Skeleton } from "@/components/ui/skeleton"
 
 import {
   ChartContainer,
@@ -51,7 +52,20 @@ export default function Summary(){
     { text: string; count: number }[]
     >([])
 
+const [loading, setLoading] = useState(true);
+
     useEffect(()=>{
+        const checkUser = async()=>{
+        const {data} = await supabase.auth.getUser()
+        console.log(data)
+            if(!data.user){
+                console.log(data)
+                return
+            }
+            await fetchStats()
+            setLoading(false)
+        }
+        checkUser();
         const fetchStats = async () => {
             const { count: respondentCount } = await supabase
                 .from("respondents")
@@ -199,39 +213,53 @@ export default function Summary(){
     },
     } satisfies ChartConfig;
 
-const [loading, setLoading] = useState(true);
 
-useEffect(()=>{
-    const checkUser = async()=>{
-    const {data} = await supabase.auth.getUser()
-console.log(data)
-    if(!data.user){
-        console.log(data)
-    }else{
-        setLoading(false)
-    }
-  }
-checkUser();
-},[])
-  if (loading) {
-    return(
-        <div className="inset-0 z-50 fixed bg-gray-800 flex items-center justify-center">
-                 <Spinner className="size-10 text-white" />
-        </div>
-    )
-  }
+if (loading) {
+  return (
+    <main className="flex flex-col p-5 lg:px-10 sm:p-0 md:px-5">
+      <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
+      <Separator />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-3 py-5">
+
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="w-full">
+            <CardHeader>
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-10 w-1/3 mt-2" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-4 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+
+        {[...Array(3)].map((_, i) => (
+          <Card key={i} className="col-span-1 sm:col-span-2 lg:col-span-4 w-full">
+            <CardHeader>
+              <Skeleton className="h-5 w-1/4" />
+              <Skeleton className="h-4 w-1/2 mt-1" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-48 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+
+      </div>
+    </main>
+  )
+}
 
     return(
-        <main className="flex flex-col lg:px-10 sm:p-0 md:px-5">
+        <main className="flex flex-col p-5 lg:px-10 sm:p-0 md:px-5">
             <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
             <Separator/>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-3 py-5">
-                
                 {/* TOTAL HH SURVEYED */}
                 <Card className="bg-linear-to-b from-gray-50 to-gray-100">
                     <CardHeader>
                         <CardDescription>Total Household Surveyed</CardDescription>
-                        <CardTitle className="text-[2rem] lg:text-4xl font-bold sm:text-3xl md:text-4xl">
+                        <CardTitle className="text-[2rem] lg:text-5xl font-bold sm:text-3xl md:text-4xl">
                             {totalRespondents}
                         </CardTitle>
                     </CardHeader>
@@ -335,7 +363,7 @@ checkUser();
                             layout="vertical"
                             accessibilityLayer
                             data={categoryData}
-                            margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
+                            margin={{ top: 10, right: 20, left: 15, bottom: 10 }}
                             >
                             <CartesianGrid horizontal={false} />
                             <XAxis type="number" hide />
