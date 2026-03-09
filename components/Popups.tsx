@@ -82,7 +82,7 @@ setLoading(true);
                      
                 <div className='relative w-full'>
                     <Input
-                    className='pr-10 text-black text-lg sm:text-md md:text-md lg:text-lg'
+                    className='pr-10 text-black text-md'
                     value={password}
                     onChange={(e)=>setPassword(e.target.value)} 
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
@@ -104,7 +104,7 @@ setLoading(true);
                 variant={'outline'}
                 disabled={loading}
                 onClick={handleSubmit}
-                 className='border w-[70%] sm:w-[75%] md:w-[80%] lg:w-[85%] border-gray-300 bg-yellow-400 hover:bg-yellow-200 p-2 active:bg-yellow-400 active:text-white text-gray-900 ursor-pointer rounded-full'>
+                 className='border w-[70%] sm:w-[75%] md:w-[80%] lg:w-[85%] border-gray-300 text-white bg-yellow-500 hover:bg-yellow-600 p-2 hover:text-white active:bg-yellow-400 active:text-white cursor-pointer rounded-full'>
                     
                   {loading && <Spinner className="h-4 w-4" />}
                     {loading ? "Logging in..." : <span className="font-bold tracking-widest text-sm">LOGIN</span>}
