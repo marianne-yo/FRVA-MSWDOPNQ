@@ -37,6 +37,7 @@ import PartTwo from "./Components/Responses-PerPart/PartTwo";
 import PartThree from "./Components/Responses-PerPart/PartThree";
 import PartFour from "./Components/Responses-PerPart/PartFour";
 import { Button } from "@/components/ui/button";
+import { exportToExcel } from "@/app/lib/exportToExcel";
 
 type Respondent = {
   respondent_id: string;
@@ -158,18 +159,24 @@ export default function Response() {
   return (
       <main className="w-full overflow-x-hidden">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 sm:px-6">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 sm:px-6 flex flex-row justify-between items-center">
           <h1 className="font-black text-2xl sm:text-3xl">RESPONSES</h1>
-        </div>
-
-        <Button
-          variant="ghost"
-          className="mx-4 mt-4 flex items-center gap-2 hover:bg-green-200 cursor-pointer"
-        >
-          <Download className="w-4 h-4" />
-          Export Data to Excel
-
-        </Button>
+          <Button
+            onClick={() => exportToExcel(respondents.map(r => ({
+              Name: r.name,
+              Barangay: r.barangay,
+              "Position in Family": r.position_family,
+              "No. of Children": r.num_children,
+              "Families in HH": r.num_families_in_hh,
+              "4Ps Beneficiary": r.is_4ps_beneficiary ? "Yes" : "No",
+              "4Ps Since": r.four_ps_since ?? "N/A",
+            })), "responses")}
+            className="flex items-center gap-2 px-4 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium justify-end cursor-pointer"
+          >
+            <Download size={16} />
+            Export to Excel
+          </Button>
+        </div> 
 
         <div className="w-full flex flex-col justify-center p-4 sm:p-6">
           {loading ? (
