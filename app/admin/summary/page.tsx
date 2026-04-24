@@ -9,6 +9,8 @@ import { useState, useEffect } from "react"
 import {BarChart, CartesianGrid, YAxis, XAxis, Bar } from "recharts"
 
 import { Skeleton } from "@/components/ui/skeleton"
+import { Download } from "lucide-react"
+import { exportSummaryToExcel } from "../../lib/exportSummaryToExcel"
 
 import {
   ChartContainer,
@@ -18,6 +20,7 @@ import {
 } from "@/components/ui/chart"
 
 import { LabelList } from "recharts"
+import { Button } from "@/components/ui/button"
 
 type CategoryResponse = {
   choice: string
@@ -252,7 +255,26 @@ if (loading) {
 
     return(
         <main className="flex flex-col p-5 lg:px-10 sm:p-0 md:px-5">
-            <h1 className="font-black text-3xl py-5 px-2">SUMMARY</h1>
+            <div className="flex items-center justify-between py-5 px-2">
+                <h1 className="font-black text-3xl">SUMMARY</h1>
+                <button
+                    onClick={() =>
+                        exportSummaryToExcel({
+                            totalRespondents,
+                            completionRate,
+                            highRiskHouseholds,
+                            fourPsPercentage,
+                            recencyData,
+                            categoryData,
+                            topFiveRisks,
+                        })
+                    }
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium cursor-pointer"
+                >
+                    <Download size={16} />
+                    Export Summary
+                </button>
+            </div>
             <Separator/>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-3 py-5">
                 {/* TOTAL HH SURVEYED */}
