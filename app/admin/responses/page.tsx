@@ -414,7 +414,7 @@ export default function Response() {
                       {r.is_4ps_beneficiary && (
                         <div className="col-span-2">
                           <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                            4P's Since
+                            4P&apos;s Since
                           </p>
                           <p className="font-medium text-gray-900">
                             {r.four_ps_since ?? "N/A"}
