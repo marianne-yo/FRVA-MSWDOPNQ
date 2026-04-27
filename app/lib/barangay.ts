@@ -32,7 +32,7 @@ export const barangay: Barangay[] = [
   { code: "pat", value: "patalan", label: "Patalan", continent: "Paniqui" },
   { code: "poblacion nor", value: "poblacion-norte", label: "Poblacion Norte", continent: "Paniqui" },
   { code: "poblacion su", value: "poblacion-sur", label: "Poblacion Sur", continent: "Paniqui" },
-  { code: "rang", value: "rangayan", label: "Rangayan", continent: "Paniqui" },
+  { code: "rang", value: "rang-ayan", label: "Rangayan", continent: "Paniqui" },
   { code: "sal", value: "salomague", label: "Salomague", continent: "Paniqui" },
   { code: "sam", value: "samput", label: "Samput", continent: "Paniqui" },
   { code: "san car", value: "san-carlos", label: "San Carlos", continent: "Paniqui" },
