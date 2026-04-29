@@ -490,9 +490,9 @@ export default function Response() {
           <FourPsSummary />
           <FourPsSinceSummary />
           <PartOne />
-          <PartTwo />
+          {/* <PartTwo />
           <PartThree />
-          <PartFour />
+          <PartFour /> */}
         </div>
       </main>
     

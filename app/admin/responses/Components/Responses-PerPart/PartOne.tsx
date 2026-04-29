@@ -78,39 +78,81 @@ function PartOne() {
   const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState<Response[]>([]);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchPart1Responses = async () => {
-      const { data, error } = await supabase
-        .from("responses")
-        .select(
-          `
-          response_id,
-          respondent_id,
-          q_id,
-          choice,
-          questions!inner (
-            q_id,
-            category,
-            question_text,
-            indicator_number,
-            question_text_tagalog
-          ),
-          respondents!inner (
-            respondent_id,
-            barangay,
-            name
-          )
-        `,
-        )
-        .eq("questions.category", "Individual");
+      setLoading(true);
 
-      if (error) {
-        console.error(error);
+      // Step 1: Get all q_ids for category "Individual"
+      const { data: individualQuestions, error: questionsError } = await supabase
+        .from("questions")
+        .select("q_id")
+        .eq("category", "Individual");
+
+      if (questionsError) {
+        console.error("Error fetching questions:", questionsError);
         setLoading(false);
-      } else {
-        setResponse((data as unknown as Response[]) || []);
-        setLoading(false);
+        return;
       }
+
+      const qIds = individualQuestions?.map((q) => q.q_id) ?? [];
+
+      if (qIds.length === 0) {
+        console.warn("No questions found for category 'Individual'");
+        setResponse([]);
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Paginate responses filtered by those q_ids
+      const PAGE_SIZE = 1000;
+      let allResponses: Response[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("responses")
+          .select(
+            `
+            response_id,
+            respondent_id,
+            q_id,
+            choice,
+            questions!inner (
+              q_id,
+              category,
+              question_text,
+              indicator_number,
+              question_text_tagalog
+            ),
+            respondents!inner (
+              respondent_id,
+              barangay,
+              name
+            )
+          `,
+          )
+          .in("q_id", qIds)  // ✅ filtering on responses.q_id directly — reliable
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error("Error fetching responses:", error);
+          setLoading(false);
+          return;
+        }
+
+        const page = (data as unknown as Response[]) ?? [];
+        allResponses = [...allResponses, ...page];
+
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        } else {
+          from += PAGE_SIZE;
+        }
+      }
+
+      setResponse(allResponses);
+      setLoading(false);
     };
 
     fetchPart1Responses();

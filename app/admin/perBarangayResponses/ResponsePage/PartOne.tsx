@@ -79,40 +79,86 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
 
   useEffect(() => {
     const fetchPart1Responses = async () => {
-      if (!selectedBarangay) return;
-
-      const { data, error } = await supabase
-        .from("responses")
-        .select(
-          `
-          response_id,
-          respondent_id,
-          q_id,
-          choice,
-          questions!inner (
-            q_id,
-            category,
-            question_text,
-            indicator_number,
-            question_text_tagalog
-          ),
-          respondents!inner (
-            respondent_id,
-            barangay,
-            name
-          )
-        `,
-        )
-        .eq("questions.category", "Individual")
-        .eq("respondents.barangay", selectedBarangay.value);
-
-      if (error) {
-        console.error(error);
+      if (!selectedBarangay) {
         setLoading(false);
-      } else {
-        setResponse((data as unknown as Response[]) || []);
-        setLoading(false);
+        return;
       }
+
+      setLoading(true);
+
+      // Step 1: Get all respondent_ids for the selected barangay
+      const { data: barangayRespondents, error: respondentsError } =
+        await supabase
+          .from("respondents")
+          .select("respondent_id")
+          .eq("barangay", selectedBarangay.value);
+
+      if (respondentsError) {
+        console.error("Error fetching respondents:", respondentsError);
+        setLoading(false);
+        return;
+      }
+
+      const respondentIds =
+        barangayRespondents?.map((r) => r.respondent_id) ?? [];
+
+      if (respondentIds.length === 0) {
+        setResponse([]);
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Paginate through all responses for those respondents
+      const PAGE_SIZE = 1000;
+      let allResponses: Response[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("responses")
+          .select(
+            `
+            response_id,
+            respondent_id,
+            q_id,
+            choice,
+            questions!inner (
+              q_id,
+              category,
+              question_text,
+              indicator_number,
+              question_text_tagalog
+            ),
+            respondents!inner (
+              respondent_id,
+              barangay,
+              name
+            )
+          `,
+          )
+          .in("respondent_id", respondentIds)
+          .eq("questions.category", "Individual")
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error("Error fetching responses:", error);
+          setLoading(false);
+          return;
+        }
+
+        const page = (data as unknown as Response[]) ?? [];
+        allResponses = [...allResponses, ...page];
+
+        if (page.length < PAGE_SIZE) {
+          hasMore = false; // Last page reached
+        } else {
+          from += PAGE_SIZE;
+        }
+      }
+
+      setResponse(allResponses);
+      setLoading(false);
     };
 
     fetchPart1Responses();
@@ -127,24 +173,21 @@ function PartOne({ selectedBarangay }: BarangaySelected) {
       </h2>
 
       {loading ? (
-        // Loading Skeleton
         <div className="flex flex-col gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="w-full px-1 bg-slate-50">
               <CardHeader>
-                <Skeleton className="h-7 w-3/4 mb-2  bg-slate-200" />
+                <Skeleton className="h-7 w-3/4 mb-2 bg-slate-200" />
                 <Skeleton className="h-4 w-1/2 mb-1 bg-slate-200" />
                 <Skeleton className="h-4 w-20 bg-slate-200" />
               </CardHeader>
               <CardContent>
                 <Skeleton className="h-40 w-full rounded-md bg-slate-200" />
               </CardContent>
-              s
             </Card>
           ))}
         </div>
       ) : (
-        // Card
         grouped.map((group) => (
           <Card key={group.q_id} className="w-full px-1 bg-slate-50 mb-2">
             <CardHeader>

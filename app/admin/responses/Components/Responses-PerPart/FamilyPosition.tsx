@@ -23,15 +23,32 @@ function FamilyPositionSummary() {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const { data, error } = await supabase
-        .from("respondents")
-        .select("respondent_id, position_family");
+      const PAGE_SIZE = 1000;
+      let allData: Respondent[] = [];
+      let from = 0;
+      let hasMore = true;
 
-      if (error) {
-        console.error(error);
-      } else {
-        setRespondents(data || []);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("respondents")
+          .select("respondent_id, position_family")
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error(error);
+          break;
+        }
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          from += PAGE_SIZE;
+          hasMore = data.length === PAGE_SIZE;
+        } else {
+          hasMore = false;
+        }
       }
+
+      setRespondents(allData);
       setLoading(false);
     };
 

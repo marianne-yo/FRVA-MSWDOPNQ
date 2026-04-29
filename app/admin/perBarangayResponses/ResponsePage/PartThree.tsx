@@ -78,45 +78,91 @@ function PartThree({ selectedBarangay }: BarangaySelected) {
   const [response, setResponse] = useState<Response[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPart1Responses = async () => {
-      if (!selectedBarangay) return;
-
-      const { data, error } = await supabase
-        .from("responses")
-        .select(
-          `
-          response_id,
-          respondent_id,
-          q_id,
-          choice,
-          questions!inner (
-            q_id,
-            category,
-            question_text,
-            indicator_number,
-            question_text_tagalog
-          ),
-          respondents!inner (
-            respondent_id,
-            barangay,
-            name
-          )
-        `,
-        )
-        .eq("questions.category", "EnvironmentDisaster")
-        .eq("respondents.barangay", selectedBarangay.value);
-
-      if (error) {
-        console.error(error);
+useEffect(() => {
+    const fetchPart2Responses = async () => {
+      if (!selectedBarangay) {
         setLoading(false);
-      } else {
-        setResponse((data as unknown as Response[]) || []);
-        setLoading(false);
+        return;
       }
+
+      setLoading(true);
+
+      // Step 1: Get all respondent_ids for the selected barangay
+      const { data: barangayRespondents, error: respondentsError } =
+        await supabase
+          .from("respondents")
+          .select("respondent_id")
+          .eq("barangay", selectedBarangay.value);
+
+      if (respondentsError) {
+        console.error("Error fetching respondents:", respondentsError);
+        setLoading(false);
+        return;
+      }
+
+      const respondentIds =
+        barangayRespondents?.map((r) => r.respondent_id) ?? [];
+
+      if (respondentIds.length === 0) {
+        setResponse([]);
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Paginate through all responses
+      const PAGE_SIZE = 1000;
+      let allResponses: Response[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("responses")
+          .select(
+            `
+            response_id,
+            respondent_id,
+            q_id,
+            choice,
+            questions!inner (
+              q_id,
+              category,
+              question_text,
+              indicator_number,
+              question_text_tagalog
+            ),
+            respondents!inner (
+              respondent_id,
+              barangay,
+              name
+            )
+          `,
+          )
+          .in("respondent_id", respondentIds)
+          .eq("questions.category", "EnvironmentDisaster")  
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error("Error fetching responses:", error);
+          setLoading(false);
+          return;
+        }
+
+        const page = (data as unknown as Response[]) ?? [];
+        allResponses = [...allResponses, ...page];
+
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        } else {
+          from += PAGE_SIZE;
+        }
+      }
+
+      setResponse(allResponses);
+      setLoading(false);
     };
 
-    fetchPart1Responses();
+    fetchPart2Responses();
   }, [selectedBarangay]);
 
   const grouped = groupByQuestion(response);

@@ -79,41 +79,57 @@ function PartThree() {
   const [response, setResponse] = useState<Response[]>([]);
 
   useEffect(() => {
-    const fetchPart1Responses = async () => {
-      const { data, error } = await supabase
-        .from("responses")
-        .select(
-          `
-          response_id,
-          respondent_id,
-          q_id,
-          choice,
-          questions!inner (
-            q_id,
-            category,
-            question_text,
-            indicator_number,
-            question_text_tagalog
-          ),
-          respondents!inner (
-            respondent_id,
-            barangay,
-            name
-          )
-        `,
-        )
-        .eq("questions.category", "EnvironmentDisaster");
+    const fetchPart3Responses = async () => {
+      const PAGE_SIZE = 1000;
+      let allData: Response[] = [];
+      let from = 0;
+      let hasMore = true;
 
-      if (error) {
-        console.error(error);
-        setLoading(false);
-      } else {
-        setResponse((data as unknown as Response[]) || []);
-        setLoading(false);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("responses")
+          .select(
+            `
+            response_id,
+            respondent_id,
+            q_id,
+            choice,
+            questions!inner (
+              q_id,
+              category,
+              question_text,
+              indicator_number,
+              question_text_tagalog
+            ),
+            respondents!inner (
+              respondent_id,
+              barangay,
+              name
+            )
+          `,
+          )
+          .eq("questions.category", "EnvironmentDisaster")
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error(error);
+          break;
+        }
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...(data as unknown as Response[])];
+          from += PAGE_SIZE;
+          hasMore = data.length === PAGE_SIZE;
+        } else {
+          hasMore = false;
+        }
       }
+
+      setResponse(allData);
+      setLoading(false);
     };
 
-    fetchPart1Responses();
+    fetchPart3Responses();
   }, []);
 
   const grouped = groupByQuestion(response);
