@@ -95,30 +95,55 @@ export default function Response() {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   // Fetch
-  useEffect(() => {
-    const fetchRespondents = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.from("respondents").select(`
-        respondent_id,
-        name,
-        position_family,
-        num_children,
-        num_families_in_hh,
-        is_4ps_beneficiary,
-        four_ps_since,
-        barangay`);
-      if (error) {
-        console.error("Error fetching respondents:", error.message);
-        setRespondents([]);
-      } else {
-        setRespondents(data || []);
+useEffect(() => {
+  const fetchRespondents = async () => {
+    setLoading(true);
+    try {
+      const PAGE_SIZE = 1000;
+      let allRespondents: Respondent[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("respondents")
+          .select(`
+            respondent_id,
+            name,
+            position_family,
+            num_children,
+            num_families_in_hh,
+            is_4ps_beneficiary,
+            four_ps_since,
+            barangay
+          `)
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error("Error fetching respondents:", error.message);
+          break;
+        }
+
+        const page = data as Respondent[] ?? [];
+        allRespondents = [...allRespondents, ...page];
+
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        } else {
+          from += PAGE_SIZE;
+        }
       }
 
+      setRespondents(allRespondents);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchRespondents();
-  }, []);
+  fetchRespondents();
+}, []);
 
   const handleNameSort = () => {
     setSortDirection((prev) => {
