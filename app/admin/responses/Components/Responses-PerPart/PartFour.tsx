@@ -13,23 +13,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChartComponent } from "../Barchart";
 
-type Response = {
-  response_id: string;
-  respondent_id: string;
+type AggregatedRow = {
   q_id: number;
+  question_text: string;
+  question_text_tagalog: string;
+  indicator_number: number;
   choice: string;
-  questions: {
-    q_id: number;
-    category: string;
-    question_text: string;
-    question_text_tagalog: string;
-    indicator_number: number;
-  };
-  respondents: {
-    respondent_id: string;
-    barangay: string;
-    name: string;
-  };
+  count: number;
 };
 
 type GroupedQuestion = {
@@ -37,7 +27,7 @@ type GroupedQuestion = {
   question_text: string;
   question_text_tagalog: string;
   indicator_number: number;
-  responses: Response[];
+  totalResponses: number;
   choiceCounts: Record<string, number>;
 };
 
@@ -49,90 +39,52 @@ const CHOICE_LABELS: Record<string, string> = {
   NONE: "None",
 };
 
-function groupByQuestion(responses: Response[]): GroupedQuestion[] {
-  const map = new Map<number, GroupedQuestion>();
-
-  for (const r of responses) {
-    const qid = r.questions.q_id;
-    if (!map.has(qid)) {
-      map.set(qid, {
-        q_id: qid,
-        question_text: r.questions.question_text,
-        question_text_tagalog: r.questions.question_text_tagalog,
-        indicator_number: r.questions.indicator_number,
-        responses: [],
-        choiceCounts: {},
-      });
-    }
-    const group = map.get(qid)!;
-    group.responses.push(r);
-    group.choiceCounts[r.choice] = (group.choiceCounts[r.choice] ?? 0) + 1;
-  }
-
-  return Array.from(map.values()).sort(
-    (a, b) => a.indicator_number - b.indicator_number,
-  );
-}
-
 function PartFour() {
   const [loading, setLoading] = useState(true);
-  const [response, setResponse] = useState<Response[]>([]);
+  const [grouped, setGrouped] = useState<GroupedQuestion[]>([]);
 
   useEffect(() => {
     const fetchPart4Responses = async () => {
-      const PAGE_SIZE = 1000;
-      let allData: Response[] = [];
-      let from = 0;
-      let hasMore = true;
-
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from("responses")
-          .select(
-            `
-            response_id,
-            respondent_id,
-            q_id,
-            choice,
-            questions!inner (
-              q_id,
-              category,
-              question_text,
-              indicator_number,
-              question_text_tagalog
-            ),
-            respondents!inner (
-              respondent_id,
-              barangay,
-              name
-            )
-          `,
-          )
-          .eq("questions.category", "SocGov")
-          .range(from, from + PAGE_SIZE - 1);
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.rpc("get_part4_choice_counts");
 
         if (error) {
-          console.error(error);
-          break;
+          console.error("Supabase RPC error:", error);
+          return;
         }
 
-        if (data && data.length > 0) {
-          allData = [...allData, ...(data as unknown as Response[])];
-          from += PAGE_SIZE;
-          hasMore = data.length === PAGE_SIZE;
-        } else {
-          hasMore = false;
+        const map = new Map<number, GroupedQuestion>();
+        for (const row of (data as AggregatedRow[])) {
+          if (!map.has(row.q_id)) {
+            map.set(row.q_id, {
+              q_id: row.q_id,
+              question_text: row.question_text,
+              question_text_tagalog: row.question_text_tagalog,
+              indicator_number: row.indicator_number,
+              totalResponses: 0,
+              choiceCounts: {},
+            });
+          }
+          const group = map.get(row.q_id)!;
+          group.choiceCounts[row.choice] = Number(row.count);
+          group.totalResponses += Number(row.count);
         }
+
+        setGrouped(
+          Array.from(map.values()).sort(
+            (a, b) => a.indicator_number - b.indicator_number
+          )
+        );
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      setResponse(allData);
-      setLoading(false);
     };
 
     fetchPart4Responses();
   }, []);
-
-  const grouped = groupByQuestion(response);
 
   return (
     <div className="text-black">
@@ -166,7 +118,7 @@ function PartFour() {
                 <i>({group.question_text_tagalog})</i>
               </CardDescription>
               <CardDescription>
-                <i>{group.responses.length}</i> Responses
+                <i>{group.totalResponses}</i> Responses
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -44,24 +44,49 @@ function TableNames({ search }: { search: string }) {
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
   const [Delete, setDelete] = useState<Respondent | null>(null);
 
-  useEffect(() => {
-    const fetchRespondents = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.from("respondents").select(`
-        respondent_id, name, position_family, num_children,
-        num_families_in_hh, is_4ps_beneficiary, four_ps_since, barangay`);
+useEffect(() => {
+  const fetchRespondents = async () => {
+    setLoading(true);
+    try {
+      const PAGE_SIZE = 1000;
+      let allData: Respondent[] = [];
+      let from = 0;
+      let hasMore = true;
 
-      if (error) {
-        console.error("Error fetching respondents:", error.message);
-        setData([]);
-      } else {
-        setData(data || []);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("respondents")
+          .select(`
+            respondent_id, name, position_family, num_children,
+            num_families_in_hh, is_4ps_beneficiary, four_ps_since, barangay
+          `)
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+          console.error("Error fetching respondents:", error.message);
+          break;
+        }
+
+        const page = (data as Respondent[]) ?? [];
+        allData = [...allData, ...page];
+
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        } else {
+          from += PAGE_SIZE;
+        }
       }
-      setLoading(false);
-    };
 
-    fetchRespondents();
-  }, []);
+      setData(allData);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRespondents();
+}, []);
 
   // Filter by name client-side
   const filtered = data.filter((r) =>
@@ -253,7 +278,7 @@ function TableNames({ search }: { search: string }) {
                               <PaginationLink
                                 isActive={currentPage === page}
                                 onClick={() => setCurrentPage(page)}
-                                className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+                                className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 cursor-pointer"
                               >
                                 {page}
                               </PaginationLink>
@@ -274,7 +299,7 @@ function TableNames({ search }: { search: string }) {
                             <PaginationLink
                               isActive={currentPage === totalPages}
                               onClick={() => setCurrentPage(totalPages)}
-                              className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+                              className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 cursor-pointer"
                             >
                               {totalPages}
                             </PaginationLink>
@@ -294,8 +319,8 @@ function TableNames({ search }: { search: string }) {
                       }
                       className={
                         currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
+                          ? "pointer-events-none opacity-50 cursor-pointer"
+                          : "cursor-pointer"
                       }
                     />
                   </PaginationItem>
